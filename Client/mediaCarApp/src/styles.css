@@ -5,4 +5,11 @@
     font-family: "Inter", sans-serif;
     
 }
+html {
+    scroll-behavior: smooth;
+}
 
+
+a {
+    cursor: pointer; 
+}

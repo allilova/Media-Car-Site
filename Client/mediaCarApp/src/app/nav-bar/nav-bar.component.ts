@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+
 @Component({
   selector: 'app-nav-bar',
   imports: [],
@@ -12,4 +13,14 @@ export class NavBarComponent {
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
 }
+
+scrollToElement(elementId: string): void {
+    this.isMenuOpen = false; 
+    
+    
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start', inline: 'nearest' });
+    }
+  }
 }
