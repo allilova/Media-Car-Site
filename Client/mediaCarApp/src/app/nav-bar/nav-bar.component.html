@@ -7,7 +7,7 @@
 
     <ul [class.active]="isMenuOpen">
         <li><a href="">Начало</a></li>
-        <li><a href="">Мултимедии</a></li>
+        <li><a (click)="scrollToElement('media-catalog')">Мултимедии</a></li>
         <li><a href="">Аксесоари</a></li>
         <li><a (click)="scrollToElement('services')">Услуги</a></li>
         <li><a (click)="scrollToElement('contacts')">Контакти</a></li>
