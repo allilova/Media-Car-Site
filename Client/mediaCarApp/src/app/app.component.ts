@@ -3,10 +3,12 @@ import {NavBarComponent} from "./nav-bar/nav-bar.component";
 import {ServicesCatalogComponent} from "./services-catalog/services-catalog.component";
 import { ContactComponent } from './contact/contact.component';
 import { MediaCatalogComponent } from './media-catalog/media-catalog.component';
+import { AccessoriesCatalogComponent } from './accessories-catalog/accessories-catalog.component';
+
 
 @Component({
   selector: 'app-root',
-  imports: [NavBarComponent, ServicesCatalogComponent, ContactComponent, MediaCatalogComponent],
+  imports: [NavBarComponent, ServicesCatalogComponent, ContactComponent, MediaCatalogComponent, AccessoriesCatalogComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
