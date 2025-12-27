@@ -5,13 +5,13 @@
         <span class="bar"></span>
     </div>
 
-    <ul [class.active]="isMenuOpen">
-        <li><a (click)="scrollToElement('home')">Начало</a></li>
-        <li><a (click)="scrollToElement('media-catalog')">Мултимедии</a></li>
-        <li><a (click)="scrollToElement('accessories-catalog')">Аксесоари</a></li>
-        <li><a (click)="scrollToElement('services')">Услуги</a></li>
-        <li><a (click)="scrollToElement('contacts')">Контакти</a></li>
-        <li><a href=""><i class="fa-solid fa-cart-shopping"></i></a></li>
+    <ul class="nav-links" [class.active]="isMenuOpen">
+        <li><a (click)="scrollToSection('hero-banner')">Начало</a></li>
+        <li><a (click)="scrollToSection('media-catalog')">Мултимедии</a></li>
+        <li><a (click)="scrollToSection('accessories-catalog')">Аксесоари</a></li>
+        <li><a (click)="scrollToSection('services')">Услуги</a></li>
+        <li><a (click)="scrollToSection('contacts')">Контакти</a></li>
+        <li><a routerLink="/basket-shop"><i class="fa-solid fa-cart-shopping"></i></a></li>
         <li><a href=""><i class="fa-solid fa-magnifying-glass"></i></a></li>
     </ul>
 </nav>

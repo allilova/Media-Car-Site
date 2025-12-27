@@ -1,8 +1,16 @@
 import { Component } from '@angular/core';
+import { ServicesCatalogComponent } from '../services-catalog/services-catalog.component';
+import { ContactComponent } from '../contact/contact.component';
+import { MediaCatalogComponent } from '../media-catalog/media-catalog.component';
+import { AccessoriesCatalogComponent } from '../accessories-catalog/accessories-catalog.component';
 
 @Component({
   selector: 'app-home',
-  imports: [],
+  imports: [
+    ServicesCatalogComponent, 
+      ContactComponent, 
+      MediaCatalogComponent, 
+      AccessoriesCatalogComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

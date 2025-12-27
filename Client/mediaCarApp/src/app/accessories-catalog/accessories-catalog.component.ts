@@ -13,13 +13,7 @@ itemsPerPage = 6;
   
   products = [
     { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    {title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' }, 
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
+    { title: 'Bluetooth Колона', price: '45 лв', img: 'accessoriesExample.PNG' }
   ];
 
 
