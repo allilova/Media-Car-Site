@@ -6,7 +6,7 @@
     </div>
 
     <ul [class.active]="isMenuOpen">
-        <li><a href="">Начало</a></li>
+        <li><a (click)="scrollToElement('home')">Начало</a></li>
         <li><a (click)="scrollToElement('media-catalog')">Мултимедии</a></li>
         <li><a (click)="scrollToElement('accessories-catalog')">Аксесоари</a></li>
         <li><a (click)="scrollToElement('services')">Услуги</a></li>
