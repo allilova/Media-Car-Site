@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-media-catalog',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './media-catalog.component.html',
   styleUrl: './media-catalog.component.css'
 })

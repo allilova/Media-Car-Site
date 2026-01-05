@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-services-catalog',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './services-catalog.component.html',
   styleUrl: './services-catalog.component.css'
 })

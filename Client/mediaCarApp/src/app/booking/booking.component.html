@@ -1,0 +1,76 @@
+<div class="booking-container">
+  
+  <h2 class="section-title">Запази час за монтаж</h2>
+
+  <div class="booking-grid">
+    
+    <div class="calendar-section">
+      <div class="calendar-header">
+        <button (click)="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <h3>{{ monthNames[currentMonth] }} {{ currentYear }}</h3>
+        <button (click)="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+
+      <div class="calendar-days-header">
+        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
+      </div>
+
+      <div class="calendar-body">
+        @for (empty of emptyDays; track $index) {
+          <div class="empty-cell"></div>
+        }
+        
+        @for (day of daysInMonth; track day) {
+          <div 
+            class="day-cell" 
+            [class.selected]="selectedDate === day"
+            (click)="selectDate(day)">
+            {{ day }}
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="time-slots-section" [class.disabled]="!selectedDate">
+      <h3>Свободни часове</h3>
+      <p *ngIf="!selectedDate" class="hint-text">Моля, първо изберете дата от календара.</p>
+      
+      <div class="slots-grid">
+        @for (time of availableSlots; track time) {
+          <button 
+            class="slot-btn" 
+            [class.active]="selectedTime === time"
+            [disabled]="!selectedDate"
+            (click)="selectTime(time)">
+            {{ time }}
+          </button>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  @if (selectedDate && selectedTime) {
+    <div class="booking-form fade-in">
+      <h3>Вашите данни</h3>
+      <div class="form-row">
+        <input type="text"  placeholder="Име и Фамилия" required>
+        <input type="text"  placeholder="Телефон" required>
+      </div>
+      <div class="form-row">
+        <input type="email"  placeholder="Имейл адрес">
+        <input type="text"  placeholder="Адрес за монтаж (Град, Улица, №)" required>
+      </div>
+
+      <div class="summary">
+        <p>
+            Ще запазите час за: 
+            <strong>{{ selectedDate }} {{ monthNames[currentMonth] }} в {{ selectedTime }}ч.</strong>
+        </p>
+      </div>
+
+      <button class="submit-btn" (click)="submitBooking()">ПОТВЪРДИ РЕЗЕРВАЦИЯТА</button>
+    </div>
+  }
+
+</div>

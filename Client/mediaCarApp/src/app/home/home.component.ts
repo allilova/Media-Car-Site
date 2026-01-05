@@ -3,14 +3,16 @@ import { ServicesCatalogComponent } from '../services-catalog/services-catalog.c
 import { ContactComponent } from '../contact/contact.component';
 import { MediaCatalogComponent } from '../media-catalog/media-catalog.component';
 import { AccessoriesCatalogComponent } from '../accessories-catalog/accessories-catalog.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',
   imports: [
-    ServicesCatalogComponent, 
+      ServicesCatalogComponent, 
       ContactComponent, 
       MediaCatalogComponent, 
-      AccessoriesCatalogComponent],
+      AccessoriesCatalogComponent,
+      RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
