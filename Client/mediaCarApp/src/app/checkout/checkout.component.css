@@ -1,0 +1,108 @@
+.checkout-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+  color: #000;
+}
+
+.page-title { text-align: center; margin-bottom: 40px; font-size: 28px; }
+
+.checkout-layout {
+  display: flex;
+  gap: 40px;
+}
+
+/* Лява колона */
+.user-details-column { flex: 1.5; }
+
+.form-section { margin-bottom: 40px; }
+.form-section h3 { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; font-size: 18px; }
+
+.input-group { margin-bottom: 15px; }
+.input-row { display: flex; gap: 15px; margin-bottom: 15px; }
+
+input, textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+textarea { height: 100px; resize: vertical; }
+
+/* Карти за доставка (Radio Buttons) */
+.delivery-options { display: flex; gap: 15px; margin-bottom: 15px; }
+
+.radio-card {
+  flex: 1;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.radio-card:hover { border-color: #000; background: #f9f9f9; }
+.radio-card input { width: auto; margin-top: 4px; }
+
+.radio-content { display: flex; flex-direction: column; }
+.radio-title { font-weight: bold; font-size: 15px; }
+.radio-desc { font-size: 13px; color: #666; margin-top: 2px; }
+
+.payment-method { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+.payment-method input { width: auto; }
+
+/* Дясна колона (Обобщение) */
+.order-summary-column { flex: 1; }
+
+.summary-card {
+  background: #f5f5f5;
+  padding: 25px;
+  border-radius: 8px;
+  position: sticky;
+  top: 20px; /* Следва те докато скролваш */
+}
+
+.summary-card h3 { margin-top: 0; margin-bottom: 20px; font-size: 18px; }
+
+.summary-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
+.item-qty { color: #666; margin-left: 5px; }
+.service-item { color: #008000; font-weight: 500; } /* Зелено за монтажа */
+
+.divider { height: 1px; background: #ddd; margin: 15px 0; }
+
+.totals .total-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+.delivery-cost { color: #666; font-size: 13px; font-style: italic; }
+
+.final-total { font-weight: bold; font-size: 20px; margin-top: 10px; padding-top: 10px; border-top: 2px solid #ddd; }
+
+.place-order-btn {
+  width: 100%;
+  background: black;
+  color: white;
+  padding: 15px;
+  border: none;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.place-order-btn:hover { background: #333; }
+.terms-text { font-size: 12px; color: #777; text-align: center; margin-top: 10px; }
+
+/* Мобилна версия */
+@media (max-width: 768px) {
+  .checkout-layout { flex-direction: column; }
+  .input-row { flex-direction: column; }
+  .delivery-options { flex-direction: column; }
+  .order-summary-column { order: -1; /* Обобщението най-горе на телефон */ }
+}

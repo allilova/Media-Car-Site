@@ -1,0 +1,47 @@
+<div class="admin-login-container">
+  
+  <div class="login-card">
+    
+    <div class="login-header">
+      <div class="icon-circle">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <h2>Административен панел</h2>
+      <p>Вход в системата за управление</p>
+    </div>
+
+    <form (ngSubmit)="login()">
+      
+      <div class="form-group">
+        <label>Потребителско име / Имейл</label>
+        <div class="input-wrapper">
+          <i class="fa-regular fa-user"></i>
+          <input type="text" [(ngModel)]="credentials.username" name="username" placeholder="Въведете потребител..." required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Парола</label>
+        <div class="input-wrapper">
+          <i class="fa-solid fa-lock"></i>
+          <input type="password" [(ngModel)]="credentials.password" name="password" placeholder="••••••••" required>
+        </div>
+      </div>
+
+      <div class="form-options">
+        <label class="checkbox-container">
+          <input type="checkbox"> Запомни ме
+        </label>
+        <a href="#" class="forgot-pass">Забравена парола?</a>
+      </div>
+
+      <button type="submit" class="login-btn">ВЛЕЗ</button>
+    </form>
+
+    <div class="footer-link">
+      <a routerLink="/">← Обратно към сайта</a>
+    </div>
+
+  </div>
+
+</div>

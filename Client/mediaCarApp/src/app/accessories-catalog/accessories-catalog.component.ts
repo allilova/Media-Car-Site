@@ -46,4 +46,12 @@ itemsPerPage = 6;
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  isAdmin = true; 
+
+  deleteProduct(id: number) {
+    if(confirm('Сигурни ли сте, че искате да изтриете този аксесоар?')) {
+      console.log('Изтриване на аксесоар с ID:', id);
+      // Логика за изтриване...
+    }
+  }
 }

@@ -53,5 +53,14 @@ export class MediaCatalogComponent {
   scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  isAdmin = true; 
+
+  deleteProduct(id: number) {
+    if(confirm('Сигурни ли сте, че искате да изтриете този артикул?')) {
+      console.log('Изтриване на продукт с ID:', id);
+      // Тук викаш сървиса за изтриване
+    }
+  }
 }
 

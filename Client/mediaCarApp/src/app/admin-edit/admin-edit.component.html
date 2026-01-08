@@ -1,0 +1,116 @@
+<div class="edit-container">
+  
+  <div class="form-card">
+    
+    <div class="card-header">
+      <div class="header-text">
+        <h2>Редактиране на продукт</h2>
+        <span class="product-id">ID: #{{ productId }}</span>
+      </div>
+      <a routerLink="/admin/dashboard" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Назад
+      </a>
+    </div>
+
+    <form (ngSubmit)="onSave()">
+      
+      <div class="section-title">Основна информация</div>
+      
+      <div class="form-row">
+        <div class="form-group full-width">
+          <label>Име на продукта</label>
+          <input type="text" [(ngModel)]="product.title" name="title" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Категория</label>
+          <select [(ngModel)]="product.category" name="category">
+            <option value="multimedia">Мултимедии</option>
+            <option value="accessories">Аксесоари</option>
+            <option value="services">Услуги</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Базова Цена (лв)</label>
+          <input type="number" [(ngModel)]="product.price" name="price" required>
+        </div>
+
+        <div class="form-group">
+          <label>Стара Цена (Опция)</label>
+          <input type="number" [(ngModel)]="product.oldPrice" name="oldPrice">
+        </div>
+      </div>
+
+      <div class="section-title">Снимки</div>
+      <div class="image-section">
+        
+        <div class="current-images">
+            <label>Текущи снимки:</label>
+            <div class="preview-gallery">
+                @for (img of product.images; track $index) {
+                    <div class="img-preview existing">
+                        <img [src]="img" alt="Product Image">
+                        <button type="button" class="remove-img" (click)="removeExistingImage($index)">✕</button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="upload-area">
+            <label>Добави нови:</label>
+            <input type="file" multiple (change)="onFileSelected($event)" class="simple-file-input">
+            
+            <div class="preview-gallery">
+                @for (img of newImages; track $index) {
+                    <div class="img-preview new">
+                        <img [src]="img" alt="New Image">
+                        <button type="button" class="remove-img" (click)="removeNewImage($index)">✕</button>
+                    </div>
+                }
+            </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <span>Варианти (RAM/ROM)</span>
+        <button type="button" class="add-variant-btn" (click)="addVariant()">+ Добави вариант</button>
+      </div>
+
+      <div class="variants-list">
+        @for (variant of product.variants; track $index) {
+          <div class="variant-row">
+            <div class="v-group">
+              <label>RAM (GB)</label>
+              <input type="number" [(ngModel)]="variant.ram" [name]="'ram'+$index">
+            </div>
+            <div class="v-group">
+              <label>ROM (GB)</label>
+              <input type="number" [(ngModel)]="variant.rom" [name]="'rom'+$index">
+            </div>
+            <div class="v-group">
+              <label>Цена (лв)</label>
+              <input type="number" [(ngModel)]="variant.price" [name]="'vprice'+$index">
+            </div>
+            <button type="button" class="delete-variant" (click)="removeVariant($index)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        }
+      </div>
+
+      <div class="section-title">Описание</div>
+      <div class="form-group">
+        <textarea [(ngModel)]="product.description" name="description" rows="6"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-btn" routerLink="/admin/dashboard">ОТКАЗ</button>
+        <button type="submit" class="save-btn">ЗАПАЗИ ПРОМЕНИТЕ</button>
+      </div>
+
+    </form>
+  </div>
+</div>

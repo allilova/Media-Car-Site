@@ -1,0 +1,98 @@
+<div class="checkout-container">
+  <h1 class="page-title">Завършване на поръчката</h1>
+
+  <div class="checkout-layout">
+    
+    <div class="user-details-column">
+      
+      <div class="form-section">
+        <h3>1. Данни за контакт</h3>
+        <div class="input-group">
+          <input type="text" placeholder="Име и Фамилия" class="full-width">
+        </div>
+        <div class="input-row">
+          <input type="text" placeholder="Телефон за връзка">
+          <input type="email" placeholder="Имейл адрес (по желание)">
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>2. Начин на доставка</h3>
+        
+        <div class="delivery-options">
+          <label class="radio-card">
+            <input type="radio" name="delivery" checked>
+            <div class="radio-content">
+              <span class="radio-title">До офис на Еконт/Спиди</span>
+              <span class="radio-desc">Най-евтина доставка</span>
+            </div>
+          </label>
+
+          <label class="radio-card">
+            <input type="radio" name="delivery">
+            <div class="radio-content">
+              <span class="radio-title">До личен адрес</span>
+              <span class="radio-desc">Куриер ще дойде при вас</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="input-group">
+          <textarea placeholder="Напишете името на офиса или вашия точен адрес..."></textarea>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>3. Начин на плащане</h3>
+        <label class="payment-method">
+          <input type="radio" checked disabled> <span>Наложен платеж (Плащане при доставка)</span>
+        </label>
+      </div>
+
+    </div>
+
+    <div class="order-summary-column">
+      <div class="summary-card">
+        <h3>Вашата поръчка</h3>
+        
+        <div class="cart-items-list">
+          <div class="summary-item">
+            <div class="item-info">
+              <span class="item-name">VW Passat B6 Navigation</span>
+              <span class="item-qty">x1</span>
+            </div>
+            <span class="item-price">270.00 лв</span>
+          </div>
+
+          <div class="summary-item service-item">
+            <div class="item-info">
+              <span class="item-name"><i class="fa-solid fa-wrench"></i> Професионален монтаж</span>
+            </div>
+            <span class="item-price">70.00 лв</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="totals">
+          <div class="total-row">
+            <span>Междинна сума:</span>
+            <span>340.00 лв</span>
+          </div>
+          <div class="total-row delivery-cost">
+            <span>Доставка:</span>
+            <span>Изчислява се от куриер</span>
+          </div>
+          <div class="total-row final-total">
+            <span>ОБЩО:</span>
+            <span>340.00 лв</span>
+          </div>
+        </div>
+
+        <button class="place-order-btn">ПОРЪЧАЙ</button>
+        <p class="terms-text">С натискане на бутона приемате общите условия.</p>
+      </div>
+    </div>
+
+  </div>
+</div>

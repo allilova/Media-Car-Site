@@ -1,11 +1,12 @@
+/* --- СТАРИЯТ ВИ CSS (Запазен) --- */
 .section-title {
     text-align: center;
     font-size: 28px;
     margin-bottom: 30px;
     font-weight: bold;
     padding-top: 50px;
+    margin-top: 0; /* Малка корекция за подравняване */
 }
-
 
 .media-catalog {
     display: grid;
@@ -15,7 +16,6 @@
     margin: 0 auto; 
     padding: 0 20px;
 }
-
 
 .card {
     background: white;
@@ -27,6 +27,7 @@
     flex-direction: column;
     justify-content: space-between; 
     transition: transform 0.2s;
+    position: relative; /* ВАЖНО: За да позиционираме админ бутоните вътре */
 }
 
 .card:hover {
@@ -52,6 +53,7 @@ p {
     margin-bottom: 20px;
 }
 
+/* Този стил е за големия бутон "Виж повече" */
 button {
     background-color: black;
     color: white;
@@ -67,7 +69,6 @@ button {
 button:hover {
     background-color: #333;
 }
-
 
 .pagination {
     display: flex;
@@ -88,10 +89,89 @@ button:hover {
     cursor: not-allowed;
 }
 
-
 @media (max-width: 768px) {
     .media-catalog {
         grid-template-columns: 1fr;
         padding: 0 15px;
+    }
+}
+
+/* --- НОВИ СТИЛОВЕ ЗА АДМИН (Без да чупят старите) --- */
+
+/* Контейнер за заглавието и бутона "Добави" */
+.catalog-header {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+/* Бутон за създаване на нов артикул */
+.add-new-btn {
+    position: absolute;
+    right: 20px;
+    top: 50px; /* Подравнено със заглавието */
+    width: auto; /* Не заема цялата ширина */
+    background-color: #000;
+    font-size: 14px;
+    padding: 8px 15px;
+    border-radius: 20px; /* Заоблен, за да се отличава */
+}
+
+/* Контейнер за иконките в картата */
+.card-admin-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 10; /* Да е над снимката */
+}
+
+/* Малките кръгли бутони (Edit/Delete) */
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background-color: rgba(255, 255, 255, 0.9); /* Бял полупрозрачен */
+    color: #000;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.icon-btn:hover {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f; /* Червено при изтриване */
+    border-color: #d32f2f;
+}
+
+/* При мобилни устройства бутонът "Нов" да не закрива заглавието */
+@media (max-width: 768px) {
+    .catalog-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .add-new-btn {
+        position: static; /* Махаме абсолютното позициониране */
+        margin-bottom: 20px;
+    }
+    
+    .section-title {
+        padding-top: 20px;
+        margin-bottom: 10px;
     }
 }

@@ -1,8 +1,28 @@
-<h1 class="section-title">Аксесоари</h1>
+<div class="catalog-header">
+    <h1 class="section-title">Аксесоари</h1>
+    
+    @if (isAdmin) {
+        <button class="add-new-btn" routerLink="/admin-create">
+            <i class="fa-solid fa-plus"></i> Добави нов
+        </button>
+    }
+</div>
 
 <div class="accessories-catalog">
     @for (item of visibleProducts; track item.title) {
         <div class="card">
+            
+            @if (isAdmin) {
+                <div class="card-admin-actions">
+                    <button class="icon-btn edit-btn" routerLink="/admin-edit" title="Редактирай">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    <button class="icon-btn delete-btn"  title="Изтрий">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            }
+
             <div class="img-container">
                 <img [src]="item.img" alt="Аксесоари">
             </div>
