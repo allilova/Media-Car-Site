@@ -4,6 +4,7 @@ import { ContactComponent } from '../contact/contact.component';
 import { MediaCatalogComponent } from '../media-catalog/media-catalog.component';
 import { AccessoriesCatalogComponent } from '../accessories-catalog/accessories-catalog.component';
 import { RouterLink } from '@angular/router';
+import { AdminOrdersComponent } from '../admin-orders/admin-orders.component';
 
 @Component({
   selector: 'app-home',
@@ -12,6 +13,7 @@ import { RouterLink } from '@angular/router';
       ContactComponent, 
       MediaCatalogComponent, 
       AccessoriesCatalogComponent,
+      AdminOrdersComponent,
       RouterLink],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
@@ -26,4 +28,5 @@ scrollToCatalog() {
       });
     }
   }
+   isAdmin = true; 
 }
