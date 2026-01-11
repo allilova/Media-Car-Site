@@ -1,0 +1,16 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "mediaCarApp Server",
+  "license": "ISC",
+  "author": "Aleksandra",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mocha": "^11.7.5"
+  }
+}
