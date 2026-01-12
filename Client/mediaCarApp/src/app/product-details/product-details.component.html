@@ -1,18 +1,11 @@
-<div class="product-page-container">
-
-  <div class="product-main-section">
-    
+<div class="product-page-container" *ngIf="product.title"> <div class="product-main-section">
     <div class="product-gallery">
       <div class="main-image">
-        <img [src]="selectedImage" alt="Мултимедия за кола">
+        <img [src]="selectedImage || 'assets/placeholder.png'" alt="Мултимедия">
       </div>
       <div class="thumbnail-list">
         @for (img of product.images; track img) {
-          <img 
-            [src]="img" 
-            (click)="selectedImage = img" 
-            [class.active]="selectedImage === img"
-            class="thumb">
+          <img [src]="img" (click)="selectedImage = img" [class.active]="selectedImage === img" class="thumb">
         }
       </div>
     </div>
@@ -30,8 +23,8 @@
       <div class="variant-selector">
         <label>Избери характеристики:</label>
         <select (change)="onVariantChange($event)" class="variant-select">
-          @for (variant of product.variants; track variant.id) {
-            <option [value]="variant.id">
+          @for (variant of product.variants; track variant._id) {
+            <option [value]="variant._id">
               {{ variant.ram }}GB RAM / {{ variant.rom }}GB ROM - {{ variant.cpu }}
             </option>
           }
@@ -39,15 +32,9 @@
       </div>
 
       <div class="action-buttons">
-        <div class="quantity-control">
-          <button (click)="quantity = quantity > 1 ? quantity - 1 : 1">-</button>
-          <input type="text" [value]="quantity" readonly>
-          <button (click)="quantity = quantity + 1">+</button>
-        </div>
-        <button class="add-to-cart-btn">Добави в количката</button>
+         <button class="add-to-cart-btn">Добави в количката</button>
       </div>
-
-      <ul class="benefits-list">
+     <ul class="benefits-list">
         <li>
           <i class="fa-solid fa-truck-fast"></i>
           <span><strong>Бърза доставка</strong> на следващия работен ден</span>
@@ -69,7 +56,7 @@
   </div>
 
   <div class="product-tabs">
-    <div class="tabs-header">
+     <div class="tabs-header">
       <button 
         [class.active]="activeTab === 'desc'" 
         (click)="activeTab = 'desc'">Описание</button>
@@ -85,21 +72,8 @@
       
       @if (activeTab === 'desc') {
         <div class="tab-pane fade-in">
-          <h3>Основни функции</h3>
-          <ul class="features-list">
-            <li>Вградена навигация с актуални карти</li>
-            <li>Управление от волана</li>
-            <li>Bluetooth за разговори и музика</li>
-            <li>Android Auto / Apple CarPlay (Безжичен)</li>
-            <li>Възможност за добавяне на камера</li>
-          </ul>
-          
-          <div class="video-container">
-            <p>Видео ревю (пример)</p>
-            <div class="video-placeholder">
-                <i class="fa-brands fa-youtube"></i>
-            </div>
-          </div>
+          <h3>Описание</h3>
+          <p style="white-space: pre-line">{{ product.description }}</p>
         </div>
       }
 
@@ -108,35 +82,31 @@
           <table class="specs-table">
             <tr>
               <td>Операционна система</td>
-              <td>Android 13</td>
+              <td>{{ product.specs?.os }}</td>
             </tr>
             <tr>
               <td>Дисплей</td>
-              <td>QLED 1280x720</td>
+              <td>{{ product.specs?.screen }}</td>
+            </tr>
+            <tr>
+              <td>Резолюция</td>
+              <td>{{ product.specs?.resolution }}</td>
             </tr>
             <tr>
               <td>Процесор</td>
-              <td>{{ selectedVariant.cpu }}</td>
-            </tr>
+              <td>{{ selectedVariant.cpu }}</td> </tr>
             <tr>
               <td>Памет (RAM/ROM)</td>
               <td>{{ selectedVariant.ram }}GB / {{ selectedVariant.rom }}GB</td>
             </tr>
             <tr>
               <td>Изходна мощност</td>
-              <td>4 x 45W DSP</td>
+              <td>{{ product.specs?.power }}</td>
             </tr>
           </table>
         </div>
       }
-
-      @if (activeTab === 'delivery') {
-        <div class="tab-pane fade-in">
-          <p>Всички поръчки направени до 16:00 се изпращат същия ден с Еконт.</p>
-          <p>Безплатна доставка за поръчки над 500лв.</p>
-        </div>
-      }
-    </div>
+      
+      </div>
   </div>
-
 </div>

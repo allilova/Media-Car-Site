@@ -1,57 +1,54 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-accessories-catalog',
-  imports: [RouterLink],
+  imports: [CommonModule,RouterLink],
   templateUrl: './accessories-catalog.component.html',
   styleUrl: './accessories-catalog.component.css'
 })
-export class AccessoriesCatalogComponent {
-itemsPerPage = 6;
+export class AccessoriesCatalogComponent implements OnInit {
+isAdmin = true;
+  products: any[] = [];
   currentPage = 1;
+  itemsPerPage = 6;
+
+  constructor(private productService: ProductService) {}
+
+  ngOnInit() {
+    this.loadProducts();
+  }
+
+  loadProducts() {
+    this.productService.getProducts('accessories').subscribe({
+      next: (data) => {
+        this.products = data.map(item => ({
+          ...item,
+          id: item._id,
+          img: item.images && item.images.length > 0 ? item.images[0] : 'assets/placeholder.png'
+        }));
+      },
+      error: (err) => console.error('Грешка:', err)
+    });
+  }
 
   
-  products = [
-    { title: 'HD Камера', price: '30 лв', img: 'accessoriesExample.PNG' },
-    { title: 'Bluetooth Колона', price: '45 лв', img: 'accessoriesExample.PNG' }
-  ];
-
-
   get visibleProducts() {
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    return this.products.slice(startIndex, endIndex);
+    return this.products.slice(startIndex, startIndex + this.itemsPerPage);
   }
-
- 
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.scrollToTop();
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.scrollToTop();
-    }
-  }
-
-  get totalPages() {
-    return Math.ceil(this.products.length / this.itemsPerPage);
-  }
-
-  scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-  isAdmin = true; 
-
-  deleteProduct(id: number) {
-    if(confirm('Сигурни ли сте, че искате да изтриете този аксесоар?')) {
-      console.log('Изтриване на аксесоар с ID:', id);
-      // Логика за изтриване...
+  
+  get totalPages() { return Math.ceil(this.products.length / this.itemsPerPage); }
+  nextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+  prevPage() { if (this.currentPage > 1) this.currentPage--; }
+  
+  deleteProduct(id: string) {
+    if(confirm('Сигурни ли сте?')) {
+        this.productService.deleteProduct(id).subscribe(() => {
+            this.loadProducts();
+        });
     }
   }
 }

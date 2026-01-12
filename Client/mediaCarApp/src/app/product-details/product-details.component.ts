@@ -1,37 +1,55 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-product-details',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css'
 })
-export class ProductDetailsComponent {
-product = {
-    title: 'Мултимедия за Audi A3 (2003-2013) 7 инча',
-    images: [
-      'mediaExample.PNG', 
-      'mediaExample.PNG',    
-      'mediaExample.PNG'       
-    ],
-    
-    variants: [
-      { id: 1, ram: 2, rom: 32, cpu: '4-ядрен', price: 270, oldPrice: 350 },
-      { id: 2, ram: 4, rom: 64, cpu: '8-ядрен', price: 380, oldPrice: 450 },
-      { id: 3, ram: 8, rom: 128, cpu: '8-ядрен', price: 520, oldPrice: 600 }
-    ]
+export class ProductDetailsComponent implements OnInit{
+product: any = {
+    title: '',
+    images: [],
+    variants: [],
+    specs: {} 
   };
 
-  
-  selectedImage = this.product.images[0];
-  selectedVariant = this.product.variants[0];
+  selectedImage: string = '';
+  selectedVariant: any = {};
   quantity = 1;
-  activeTab = 'desc'; 
+  activeTab = 'desc';
 
- 
+  constructor(
+    private route: ActivatedRoute,
+    private productService: ProductService
+  ) {}
+
+  ngOnInit() {
+    const id = this.route.snapshot.paramMap.get('id');
+    
+    if (id) {
+      this.productService.getProductById(id).subscribe({
+        next: (data) => {
+          this.product = data;
+
+          if (this.product.images && this.product.images.length > 0) {
+            this.selectedImage = this.product.images[0];
+          }
+          if (this.product.variants && this.product.variants.length > 0) {
+            this.selectedVariant = this.product.variants[0];
+          }
+        },
+        error: (err) => console.error('Error fetching product', err)
+      });
+    }
+  }
+
   onVariantChange(event: any) {
-    const variantId = Number(event.target.value);
-    const found = this.product.variants.find(v => v.id === variantId);
+    const variantId = event.target.value; 
+    const found = this.product.variants.find((v: any) => v._id === variantId || v.id === variantId);
     if (found) {
       this.selectedVariant = found;
     }

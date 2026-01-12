@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-media-catalog',
@@ -7,22 +8,35 @@ import { RouterLink } from '@angular/router';
   templateUrl: './media-catalog.component.html',
   styleUrl: './media-catalog.component.css'
 })
-export class MediaCatalogComponent {
+export class MediaCatalogComponent implements OnInit{
 
-  itemsPerPage = 6;
-  currentPage = 1;
-
+isAdmin = true; 
   
-  products = [
-    { title: 'VW Passat B6 B7 2010-2015', price: '270 лв', img: 'mediaExample.PNG' },
-    { title: 'Audi A4 B8 2008-2016', price: '320 лв', img: 'mediaExample.PNG' },
-    { title: 'BMW E46 Android 12', price: '290 лв', img: 'mediaExample.PNG' },
-    { title: 'Mercedes W203 C-Class', price: '350 лв', img: 'mediaExample.PNG' },
-    { title: 'Toyota Corolla 2007', price: '250 лв', img: 'mediaExample.PNG' },
-    { title: 'Honda Civic 8th Gen', price: '280 лв', img: 'mediaExample.PNG' },
-    { title: 'Opel Astra H', price: '260 лв', img: 'mediaExample.PNG' }, 
-    { title: 'Golf 5 / 6 Navigation', price: '275 лв', img: 'mediaExample.PNG' },
-  ];
+ 
+  products: any[] = [];
+  
+ 
+  currentPage = 1;
+  itemsPerPage = 6;
+
+  constructor(private productService: ProductService) {}
+
+  ngOnInit() {
+    this.loadProducts();
+  }
+
+  loadProducts() {
+    this.productService.getProducts('multimedia').subscribe({
+      next: (data) => {
+        this.products = data.map(item => ({
+          ...item,
+          id: item._id, 
+          img: item.images && item.images.length > 0 ? item.images[0] : 'assets/placeholder.png'
+        }));
+      },
+      error: (err) => console.error('Грешка при зареждане:', err)
+    });
+  }
 
 
   get visibleProducts() {
@@ -31,35 +45,24 @@ export class MediaCatalogComponent {
     return this.products.slice(startIndex, endIndex);
   }
 
- 
-  nextPage() {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage++;
-      this.scrollToTop();
-    }
-  }
-
-  prevPage() {
-    if (this.currentPage > 1) {
-      this.currentPage--;
-      this.scrollToTop();
-    }
-  }
-
   get totalPages() {
     return Math.ceil(this.products.length / this.itemsPerPage);
   }
 
-  scrollToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+  nextPage() {
+    if (this.currentPage < this.totalPages) this.currentPage++;
   }
 
-  isAdmin = true; 
+  prevPage() {
+    if (this.currentPage > 1) this.currentPage--;
+  }
 
-  deleteProduct(id: number) {
-    if(confirm('Сигурни ли сте, че искате да изтриете този артикул?')) {
-      console.log('Изтриване на продукт с ID:', id);
-      // Тук викаш сървиса за изтриване
+
+  deleteProduct(id: string) {
+    if(confirm('Сигурни ли сте?')) {
+        this.productService.deleteProduct(id).subscribe(() => {
+            this.loadProducts();
+        });
     }
   }
 }

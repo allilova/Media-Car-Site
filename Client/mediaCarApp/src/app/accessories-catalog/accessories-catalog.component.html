@@ -9,15 +9,15 @@
 </div>
 
 <div class="accessories-catalog">
-    @for (item of visibleProducts; track item.title) {
+    @for (item of visibleProducts; track item.id) {
         <div class="card">
             
             @if (isAdmin) {
                 <div class="card-admin-actions">
-                    <button class="icon-btn edit-btn" routerLink="/admin-edit" title="Редактирай">
+                    <button class="icon-btn edit-btn" [routerLink]="['/admin/product/edit', item.id]" title="Редактирай">
                         <i class="fa-solid fa-pen"></i>
                     </button>
-                    <button class="icon-btn delete-btn"  title="Изтрий">
+                    <button class="icon-btn delete-btn" (click)="deleteProduct(item.id)" title="Изтрий">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </div>
@@ -27,8 +27,8 @@
                 <img [src]="item.img" alt="Аксесоари">
             </div>
             <h3>{{ item.title }}</h3>
-            <p>От {{ item.price }}</p>
-            <button routerLink="/product">Виж повече</button>
+            <p>От {{ item.price }} лв.</p>
+            <button [routerLink]="['/product', item.id]">Виж повече</button>
         </div>
     }
 </div>

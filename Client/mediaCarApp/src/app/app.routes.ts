@@ -14,7 +14,7 @@ import { AdminEditComponent } from './admin-edit/admin-edit.component';
 export const routes: Routes = [
     {path: '', redirectTo: '/home', pathMatch: 'full'},
     {path: 'home', component: HomeComponent},
-    { path: 'product', component: ProductDetailsComponent },
+    { path: 'product/:id', component: ProductDetailsComponent },
     {path: 'basket-shop', component: BasketShopComponent},
     {path: 'basket-plus', component: BasketPlusComponent},
     {path: 'checkout', component: CheckoutComponent},
