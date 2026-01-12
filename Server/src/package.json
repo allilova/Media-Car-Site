@@ -10,7 +10,14 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "express": "^5.2.1",
-    "mocha": "^11.7.5"
+    "express-session": "^1.18.2",
+    "jsonwebtoken": "^9.0.3",
+    "mocha": "^11.7.5",
+    "mongodb": "^7.0.0",
+    "mongoose": "^9.1.3"
   }
 }
