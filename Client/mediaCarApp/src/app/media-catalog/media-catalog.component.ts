@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
+import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-media-catalog',
@@ -10,7 +11,7 @@ import { ProductService } from '../services/product.service';
 })
 export class MediaCatalogComponent implements OnInit{
 
-isAdmin = true; 
+isAdmin = false; 
   
  
   products: any[] = [];
@@ -19,11 +20,14 @@ isAdmin = true;
   currentPage = 1;
   itemsPerPage = 6;
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, private adminService: AdminService) {}
 
   ngOnInit() {
     this.loadProducts();
-  }
+    this.adminService.isAdmin$.subscribe(status => {
+      this.isAdmin = status;
+  });
+}
 
   loadProducts() {
     this.productService.getProducts('multimedia').subscribe({

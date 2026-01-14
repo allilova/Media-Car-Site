@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
+import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-accessories-catalog',
@@ -10,15 +11,18 @@ import { ProductService } from '../services/product.service';
   styleUrl: './accessories-catalog.component.css'
 })
 export class AccessoriesCatalogComponent implements OnInit {
-isAdmin = true;
+isAdmin = false;
   products: any[] = [];
   currentPage = 1;
   itemsPerPage = 6;
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, private adminService: AdminService) {}
 
   ngOnInit() {
     this.loadProducts();
+    this.adminService.isAdmin$.subscribe(status => {
+      this.isAdmin = status;
+    });
   }
 
   loadProducts() {

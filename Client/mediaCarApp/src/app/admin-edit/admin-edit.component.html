@@ -1,21 +1,17 @@
-<div class="edit-container">
-  
-  <div class="form-card">
+<div class="create-container"> <div class="form-card">
     
     <div class="card-header">
       <div class="header-text">
         <h2>Редактиране на продукт</h2>
-        <span class="product-id">ID: #{{ productId }}</span>
       </div>
-      <a routerLink="/admin/dashboard" class="back-link">
-        <i class="fa-solid fa-arrow-left"></i> Назад
+      <a routerLink="/" class="back-link">
+        <i class="fa-solid fa-xmark"></i> Отказ
       </a>
     </div>
 
     <form (ngSubmit)="onSave()">
       
       <div class="section-title">Основна информация</div>
-      
       <div class="form-row">
         <div class="form-group full-width">
           <label>Име на продукта</label>
@@ -32,85 +28,77 @@
             <option value="services">Услуги</option>
           </select>
         </div>
-        
         <div class="form-group">
-          <label>Базова Цена (лв)</label>
+          <label>Базова Цена</label>
           <input type="number" [(ngModel)]="product.price" name="price" required>
         </div>
-
         <div class="form-group">
-          <label>Стара Цена (Опция)</label>
+          <label>Стара Цена</label>
           <input type="number" [(ngModel)]="product.oldPrice" name="oldPrice">
         </div>
       </div>
 
       <div class="section-title">Снимки</div>
-      <div class="image-section">
+      <div class="image-upload-area" style="text-align: left; padding: 20px;">
         
-        <div class="current-images">
-            <label>Текущи снимки:</label>
-            <div class="preview-gallery">
+        @if (product.images.length > 0) {
+            <label>Съществуващи снимки:</label>
+            <div class="preview-gallery" style="margin-bottom: 20px;">
                 @for (img of product.images; track $index) {
-                    <div class="img-preview existing">
-                        <img [src]="img" alt="Product Image">
+                    <div class="img-preview">
+                        <img [src]="img">
                         <button type="button" class="remove-img" (click)="removeExistingImage($index)">✕</button>
                     </div>
                 }
             </div>
-        </div>
+        }
 
-        <div class="upload-area">
-            <label>Добави нови:</label>
-            <input type="file" multiple (change)="onFileSelected($event)" class="simple-file-input">
-            
-            <div class="preview-gallery">
-                @for (img of newImages; track $index) {
-                    <div class="img-preview new">
-                        <img [src]="img" alt="New Image">
-                        <button type="button" class="remove-img" (click)="removeNewImage($index)">✕</button>
-                    </div>
-                }
-            </div>
+        <label>Добави нови снимки:</label>
+        <input type="file" multiple (change)="onFileSelected($event)" class="file-input" style="position: relative; opacity: 1; height: auto;">
+        
+        <div class="preview-gallery">
+            @for (img of newImages; track $index) {
+                <div class="img-preview" style="border-color: green;"> <img [src]="img">
+                    <button type="button" class="remove-img" (click)="removeNewImage($index)">✕</button>
+                </div>
+            }
         </div>
       </div>
 
       <div class="section-title">
-        <span>Варианти (RAM/ROM)</span>
-        <button type="button" class="add-variant-btn" (click)="addVariant()">+ Добави вариант</button>
+        <span>Варианти</span>
+        <button type="button" class="add-variant-btn" (click)="addVariant()">+ Добави</button>
       </div>
-
       <div class="variants-list">
         @for (variant of product.variants; track $index) {
           <div class="variant-row">
-            <div class="v-group">
-              <label>RAM (GB)</label>
-              <input type="number" [(ngModel)]="variant.ram" [name]="'ram'+$index">
-            </div>
-            <div class="v-group">
-              <label>ROM (GB)</label>
-              <input type="number" [(ngModel)]="variant.rom" [name]="'rom'+$index">
-            </div>
-            <div class="v-group">
-              <label>Цена (лв)</label>
-              <input type="number" [(ngModel)]="variant.price" [name]="'vprice'+$index">
-            </div>
-            <button type="button" class="delete-variant" (click)="removeVariant($index)">
-              <i class="fa-solid fa-trash"></i>
-            </button>
+            <div class="v-group"><label>RAM</label><input type="number" [(ngModel)]="variant.ram" [name]="'ram'+$index"></div>
+            <div class="v-group"><label>ROM</label><input type="number" [(ngModel)]="variant.rom" [name]="'rom'+$index"></div>
+            <div class="v-group" style="flex: 1.5;"><label>CPU</label><input type="text" [(ngModel)]="variant.cpu" [name]="'cpu'+$index"></div>
+            <div class="v-group"><label>Цена</label><input type="number" [(ngModel)]="variant.price" [name]="'vprice'+$index"></div>
+            <button type="button" class="delete-variant" (click)="removeVariant($index)"><i class="fa-solid fa-trash"></i></button>
           </div>
         }
       </div>
 
+      <div class="section-title">Технически Данни</div>
+      <div class="form-row">
+          <div class="form-group"><label>ОС</label><input type="text" [(ngModel)]="product.specs.os" name="os"></div>
+          <div class="form-group"><label>Екран</label><input type="text" [(ngModel)]="product.specs.screen" name="screen"></div>
+      </div>
+      <div class="form-row">
+          <div class="form-group"><label>Резолюция</label><input type="text" [(ngModel)]="product.specs.resolution" name="resolution"></div>
+          <div class="form-group"><label>Мощност</label><input type="text" [(ngModel)]="product.specs.power" name="power"></div>
+      </div>
+
       <div class="section-title">Описание</div>
       <div class="form-group">
-        <textarea [(ngModel)]="product.description" name="description" rows="6"></textarea>
+        <textarea [(ngModel)]="product.description" name="description" rows="5"></textarea>
       </div>
 
       <div class="form-actions">
-        <button type="button" class="cancel-btn" routerLink="/admin/dashboard">ОТКАЗ</button>
-        <button type="submit" class="save-btn">ЗАПАЗИ ПРОМЕНИТЕ</button>
+        <button type="submit" class="submit-btn">ЗАПАЗИ ПРОМЕНИТЕ</button>
       </div>
-
     </form>
   </div>
 </div>

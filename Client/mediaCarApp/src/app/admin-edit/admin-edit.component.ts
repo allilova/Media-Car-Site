@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-admin-edit',
@@ -10,63 +11,52 @@ import { ActivatedRoute, RouterLink, Router } from '@angular/router';
   styleUrl: './admin-edit.component.css'
 })
 export class AdminEditComponent {
-productId: string | null = '';
-
-  // Моделът на продукта (първоначално празен)
-  product = {
+productId: string = '';
+  
+  product: any = {
     title: '',
     category: '',
     price: 0,
     oldPrice: 0,
     description: '',
-    images: [] as string[], // Съществуващи снимки (URL)
-    variants: [] as any[]
+    images: [], 
+    specs: { os: '', screen: '', resolution: '', power: '' },
+    variants: []
   };
 
-  // Нови снимки, които потребителят добавя сега
+
   newImages: string[] = [];
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private productService: ProductService
+  ) {}
 
   ngOnInit() {
-    // 1. Взимаме ID-то от URL-а
-    this.productId = this.route.snapshot.paramMap.get('id');
-
-    // 2. Симулираме зареждане на данни от базата данни
+    this.productId = this.route.snapshot.paramMap.get('id') || '';
     if (this.productId) {
-      this.loadProductData(this.productId);
+      this.loadProductData();
     }
   }
 
-  loadProductData(id: string) {
-    // В реално приложение тук ще има HTTP заявка
-    // Сега просто попълваме с фалшиви данни за теста
-    console.log(`Зареждане на продукт с ID: ${id}`);
-    
-    this.product = {
-      title: 'VW Passat B6 Android 13 (Редакция)',
-      category: 'multimedia',
-      price: 270,
-      oldPrice: 350,
-      description: 'Това е оригиналното описание на продукта, което сега редактираме...',
-      images: [
-        'assets/media-product.png', // Примерна съществуваща снимка
-      ],
-      variants: [
-        { ram: 2, rom: 32, price: 270 },
-        { ram: 4, rom: 64, price: 350 }
-      ]
-    };
+  loadProductData() {
+    this.productService.getProductById(this.productId).subscribe({
+      next: (data) => {
+        this.product = data;
+        if (!this.product.specs) this.product.specs = {};
+        if (!this.product.variants) this.product.variants = [];
+      },
+      error: (err) => console.error(err)
+    });
   }
 
-  // --- ЛОГИКА ЗА СНИМКИ ---
-  
-  // Изтриване на стара снимка
+
   removeExistingImage(index: number) {
     this.product.images.splice(index, 1);
   }
 
-  // Избор на нови файлове
+ 
   onFileSelected(event: any) {
     if (event.target.files) {
       for (let i = 0; i < event.target.files.length; i++) {
@@ -79,31 +69,38 @@ productId: string | null = '';
     }
   }
 
-  // Изтриване на нова (още незапазена) снимка
+  
   removeNewImage(index: number) {
     this.newImages.splice(index, 1);
   }
 
-  // --- ЛОГИКА ЗА ВАРИАНТИ ---
+ 
   addVariant() {
-    this.product.variants.push({ ram: 0, rom: 0, price: 0 });
+    this.product.variants.push({ ram: 4, rom: 64, price: 0, cpu: '4-ядрен' });
   }
 
   removeVariant(index: number) {
     this.product.variants.splice(index, 1);
   }
 
-  // --- ЗАПАЗВАНЕ ---
+ 
   onSave() {
-    // Обединяваме всичко за изпращане
-    const finalData = {
-      id: this.productId,
+    const combinedImages = [...this.product.images, ...this.newImages];
+
+    const updatedProduct = {
       ...this.product,
-      newImagesToUpload: this.newImages
+      images: combinedImages
     };
 
-    console.log("Запазване на промените:", finalData);
-    alert("Промените са запазени успешно!");
-    this.router.navigate(['/admin/dashboard']);
+    this.productService.updateProduct(this.productId, updatedProduct).subscribe({
+      next: () => {
+        alert('Промените са запазени!');
+        this.router.navigate(['/']); 
+      },
+      error: (err) => {
+        console.error(err);
+        alert('Грешка при запис.');
+      }
+    });
   }
 }

@@ -22,5 +22,5 @@ export const routes: Routes = [
     {path: 'booking', component: BookingComponent},
     {path: 'admin', component: AdminLoginComponent},
     {path: 'admin-create', component: AdminCreateComponent},
-    {path: 'admin-edit', component: AdminEditComponent},
+    {path: 'admin-edit/:id', component: AdminEditComponent},
 ];

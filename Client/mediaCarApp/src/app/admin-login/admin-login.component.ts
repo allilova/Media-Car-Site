@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { FormsModule } from '@angular/forms'; // За ngModel
-import { RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-admin-login',
@@ -10,21 +11,24 @@ import { CommonModule } from '@angular/common';
   styleUrl: './admin-login.component.css'
 })
 export class AdminLoginComponent {
-credentials = {
-    username: '',
+  credentials = {
+    email: '', 
     password: ''
   };
 
-  constructor(private router: Router) {}
+  errorMessage: string = '';
+
+  constructor(private authService: AdminService, private router: Router) {}
 
   login() {
-    // Тук ще е логиката за вход по-късно
-    console.log('Login attempt:', this.credentials);
-    
-    if (this.credentials.username && this.credentials.password) {
-        // Примерно пренасочване към админ дашборд
-        // this.router.navigate(['/admin/dashboard']);
-        alert("Входът е симулиран!");
-    }
+    this.authService.login(this.credentials).subscribe({
+      next: () => {
+        this.router.navigate(['/home']); 
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Грешен имейл или парола!';
+      }
+    });
   }
 }
