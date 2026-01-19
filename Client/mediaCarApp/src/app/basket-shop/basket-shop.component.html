@@ -2,32 +2,55 @@
   
   <div class="basket-header">
     <button class="back-btn" routerLink="/home"> 
-      <i class="fa-solid fa-arrow-left"></i> </button>
+      <i class="fa-solid fa-arrow-left"></i> 
+    </button>
+    <h2 style="display:inline-block; margin-left:15px;">Твоята количка</h2>
   </div>
 
-  <div class="cart-item-card">
+  @if (cartItems.length === 0) {
+    <div class="empty-cart" style="text-align: center; padding: 40px;">
+      <p>Количката е празна.</p>
+      <button class="buy-btn" routerLink="/home" style="font-size: 14px;">Към магазина</button>
+    </div>
+  } @else {
     
-    <button class="remove-btn">✕</button>
+    <div>
+      @for (item of cartItems; track item.id + item.variantId) {
+        <div class="cart-item-card">
+          
+          <button class="remove-btn" (click)="removeItem(item)">✕</button>
 
-    <div class="item-image">
-      <img src="mediaExample.PNG" alt="Volkswagen Passat Navigation">
+          <div class="item-image">
+            <img [src]="item.image" [alt]="item.title">
+          </div>
+
+          <div class="item-details">
+            <h3>{{ item.title }}</h3>
+            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">{{ item.specs }}</p>
+            
+            <p class="item-price">
+              Цена: {{ item.price }} лв. 
+              <span class="price-secondary"> (x{{ item.quantity }})</span>
+            </p>
+            <p style="font-weight: bold; margin-top: 5px;">
+              Общо: {{ item.price * item.quantity }} лв.
+            </p>
+          </div>
+
+          <div class="quantity-controls">
+            <button class="qty-btn" (click)="decreaseQty(item)">-</button>
+            <input type="text" [value]="item.quantity" readonly class="qty-input">
+            <button class="qty-btn" (click)="increaseQty(item)">+</button>
+          </div>
+
+        </div>
+      }
     </div>
 
-    <div class="item-details">
-      <h3>Volkswagen Passat B6 B7 2010-2015</h3>
-      <p class="item-price">Цена: 270 лв <span class="price-secondary">(138.05€)</span></p>
+    <div class="basket-footer">
+      <div class="total-price">Общо: {{ totalPrice }} лв</div>
+      <button class="buy-btn" routerLink="/checkout">ПОРЪЧАЙ</button>
     </div>
-
-    <div class="quantity-controls">
-      <button class="qty-btn">+</button>
-      <input type="text" value="1" readonly class="qty-input">
-      <button class="qty-btn">-</button>
-    </div>
-  </div>
-
-  <div class="basket-footer">
-    <div class="total-price">Общо: 270лв</div>
-    <button class="buy-btn" routerLink="/basket-plus">Купи</button>
-  </div>
+  }
 
 </div>

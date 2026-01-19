@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../services/product.service';
+import { CartService } from '../services/cart.service';
 
 @Component({
   selector: 'app-product-details',
@@ -24,7 +25,8 @@ product: any = {
 
   constructor(
     private route: ActivatedRoute,
-    private productService: ProductService
+    private productService: ProductService,
+    private cartService: CartService
   ) {}
 
   ngOnInit() {
@@ -53,5 +55,12 @@ product: any = {
     if (found) {
       this.selectedVariant = found;
     }
+  }
+  addToCart() {
+    if (!this.selectedVariant) return;
+
+    this.cartService.addToCart(this.product, this.selectedVariant, this.quantity);
+    
+    alert('Продуктът е добавен в количката!');
   }
 }
