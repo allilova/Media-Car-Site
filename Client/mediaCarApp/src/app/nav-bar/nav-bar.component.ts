@@ -1,42 +1,54 @@
-import { Component } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterLink } from '@angular/router'; 
+import { AdminService } from '../services/admin.service'; 
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-nav-bar',
-  imports: [RouterLink],
+  standalone: true,
+  imports: [RouterLink, CommonModule],
   templateUrl: './nav-bar.component.html',
-  styleUrl: './nav-bar.component.css'
+  styleUrls: ['./nav-bar.component.css']
 })
-export class NavBarComponent {
-  isMenuOpen = false;
-
+export class NavBarComponent implements OnInit {
   
-  constructor(private router: Router) {}
+  isMenuOpen = false;
+  isAdmin = false; 
+
+  constructor(
+    private authService: AdminService, 
+    private router: Router
+  ) {}
+
+  ngOnInit() {
+    this.authService.isAdmin$.subscribe(status => {
+      this.isAdmin = status;
+    });
+  }
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
   }
 
-
-  scrollToSection(elementId: string): void {
-    this.isMenuOpen = false;
-
-    if (this.router.url === '/') {
-      this.doScroll(elementId);
-    } else {
-      this.router.navigate(['/']).then(() => {
+  scrollToSection(sectionId: string) {
+    this.isMenuOpen = false; 
+    
+    
+    if (this.router.url !== '/home') {
+      this.router.navigate(['/home']).then(() => {
         setTimeout(() => {
-          this.doScroll(elementId);
+          document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       });
+    } else {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     }
   }
 
-
-  private doScroll(id: string) {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
+  logout() {
+    this.authService.logout();
+    this.isMenuOpen = false;
   }
 }
+  
+

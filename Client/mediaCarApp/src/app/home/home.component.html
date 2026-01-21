@@ -9,20 +9,27 @@
         </div>
     </div>
 </div>
+
 <section id="media-catalog">
     <app-media-catalog></app-media-catalog>
 </section>
+
 <section id="accessories-catalog">
     <app-accessories-catalog></app-accessories-catalog>
 </section>
+
 <section id="services">
     <app-services-catalog></app-services-catalog>
 </section>
 
-<section id="contacts">
-    <app-contact></app-contact>
-</section>
+@if (!isAdmin) {
+    <section id="contacts">
+        <app-contact></app-contact>
+    </section>
+}
 
-<section id="admin-orders">
-    <app-admin-orders></app-admin-orders>
-</section>
+@if (isAdmin) {
+    <section id="admin-orders">
+        <app-admin-orders></app-admin-orders>
+    </section>
+}
