@@ -22,13 +22,17 @@ router.post('/', isAdmin, async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
-        const category = req.query.category;
+        const { category, search } = req.query;
         
         let filter = {};
+        
         if (category) {
-            filter = { category: category };
+            filter.category = category;
         }
 
+        if (search) {
+            filter.title = { $regex: search, $options: 'i' };
+        }
 
         const products = await Product.find(filter);
         

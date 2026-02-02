@@ -54,12 +54,12 @@
     <div class="booking-form fade-in">
       <h3>Вашите данни</h3>
       <div class="form-row">
-        <input type="text"  placeholder="Име и Фамилия" required>
-        <input type="text"  placeholder="Телефон" required>
+        <input type="text" [(ngModel)]="userData.name" name="name" placeholder="Име и Фамилия" required>
+        <input type="text" [(ngModel)]="userData.phone" name="phone" placeholder="Телефон" required>
       </div>
       <div class="form-row">
-        <input type="email"  placeholder="Имейл адрес">
-        <input type="text"  placeholder="Адрес за монтаж (Град, Улица, №)" required>
+        <input type="email" [(ngModel)]="userData.email" name="email" placeholder="Имейл адрес">
+        <input type="text" [(ngModel)]="userData.address" name="address" placeholder="Адрес за монтаж (Град, Улица, №)" required>
       </div>
 
       <div class="summary">
@@ -72,5 +72,4 @@
       <button class="submit-btn" (click)="submitBooking()">ПОТВЪРДИ РЕЗЕРВАЦИЯТА</button>
     </div>
   }
-
 </div>

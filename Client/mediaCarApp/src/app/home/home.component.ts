@@ -3,7 +3,6 @@ import { ServicesCatalogComponent } from '../services-catalog/services-catalog.c
 import { ContactComponent } from '../contact/contact.component';
 import { MediaCatalogComponent } from '../media-catalog/media-catalog.component';
 import { AccessoriesCatalogComponent } from '../accessories-catalog/accessories-catalog.component';
-import { RouterLink } from '@angular/router';
 import { AdminOrdersComponent } from '../admin-orders/admin-orders.component';
 import { AdminService } from '../services/admin.service';
 
@@ -14,8 +13,7 @@ import { AdminService } from '../services/admin.service';
       ContactComponent, 
       MediaCatalogComponent, 
       AccessoriesCatalogComponent,
-      AdminOrdersComponent,
-      RouterLink],
+      AdminOrdersComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

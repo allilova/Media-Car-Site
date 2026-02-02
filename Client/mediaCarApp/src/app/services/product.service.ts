@@ -14,15 +14,21 @@ export class ProductService {
   createProduct(productData: any): Observable<any> {
     return this.http.post(this.apiUrl, productData);
   }
-  getProducts(category?: string): Observable<any[]> {
+  getProducts(category?: string, search?: string): Observable<any[]> {
     let params = new HttpParams();
     
     if (category) {
       params = params.set('category', category);
     }
 
+    // НОВО: Ако има дума за търсене, я добавяме в параметрите
+    if (search) {
+      params = params.set('search', search);
+    }
+
     return this.http.get<any[]>(this.apiUrl, { params });
   }
+  
   getProductById(id: string): Observable<any> {
   return this.http.get(`${this.apiUrl}/${id}`);
 }

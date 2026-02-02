@@ -1,35 +1,56 @@
 <div class="search-page-container">
   
   <div class="search-bar-section">
-    <input type="text" class="search-input" placeholder="Търсене...">
-    <button class="search-btn">Търси</button>
+    <input type="text" 
+           class="search-input" 
+           placeholder="Търсене на мултимедия, аксесоари..." 
+           [(ngModel)]="searchQuery"
+           (keyup.enter)="onSearch()">
+           
+    <button class="search-btn" (click)="onSearch()">
+      <i class="fa-solid fa-magnifying-glass"></i> Търси
+    </button>
   </div>
 
-  <h3 class="results-label">Резултати от търсенето:</h3>
-
-  <div class="results-grid">
-    
-    <div class="product-card">
-      <div class="img-container">
-        <img src="mediaExample.PNG" alt="Volkswagen Passat">
-      </div>
-      <div class="card-info">
-        <h4>Volkswagen Passat B6 B7 2010-2015</h4>
-        <p class="price">От 270 лв <span class="price-euro">(138.05€)</span></p>
-        <button class="view-btn">Виж повече</button>
-      </div>
+  @if (!hasSearched) {
+    <div class="empty-state">
+      <i class="fa-solid fa-magnifying-glass-arrow-right placeholder-icon"></i>
+      <h3>Какво търсите днес?</h3>
+      <p>Въведете име на автомобил или продукт, за да видите резултатите.</p>
     </div>
+  }
 
-    <div class="product-card">
-      <div class="img-container">
-        <img src="mediaExample.PNG" alt="Volkswagen Passat">
-      </div>
-      <div class="card-info">
-        <h4>Volkswagen Passat B6 B7 2010-2015</h4>
-        <p class="price">От 270 лв <span class="price-euro">(138.05€)</span></p>
-        <button class="view-btn">Виж повече</button>
-      </div>
+  @if (hasSearched && results.length === 0) {
+    <div class="empty-state">
+      <i class="fa-regular fa-face-frown-open placeholder-icon"></i>
+      <h3>Няма намерени резултати</h3>
+      <p>Не открихме продукти за "<strong>{{ searchQuery }}</strong>".</p>
+      <p class="suggestion">Опитайте с друга ключова дума или разгледайте каталога.</p>
+      <button routerLink="/home" class="back-btn">Към началната страница</button>
     </div>
+  }
 
+  @if (hasSearched && results.length > 0) {
+    <h3 class="results-label">
+      Намерени резултати: {{ results.length }}
+    </h3>
+
+    <div class="results-grid">
+      @for (product of results; track product._id) {
+          <div class="product-card">
+            <div class="img-container">
+              <img [src]="product.img" [alt]="product.title">
+            </div>
+            <div class="card-info">
+              <h4>{{ product.title }}</h4>
+              <p class="price">
+                  {{ product.variants?.[0]?.price || product.price }} лв.
+              </p>
+              <button class="view-btn" [routerLink]="['/product', product._id]">Виж повече</button>
+            </div>
+          </div>
+      }
     </div>
+  }
+
 </div>
