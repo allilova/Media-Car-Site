@@ -1,146 +1,161 @@
-<div class="admin-container">
+<div class="dashboard-container">
   
-  <div class="dashboard-header">
-    <h1 class="page-title">Управление на поръчки</h1>
-    
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-label">Чакащи поръчки</span>
-        <span class="stat-value">{{ getPendingOrdersCount() }}</span>
+  <div class="header-section">
+    <h2>Административен Панел</h2>
+    <p>Управление на поръчки и график за монтажи</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <div class="info">
+        <h3>{{ bookings.length }}</h3>
+        <p>Запазени Часове</p>
       </div>
-      <div class="stat-card">
-        <span class="stat-label">Предстоящи монтажи</span>
-        <span class="stat-value">{{ getPendingAppointmentsCount() }}</span>
+    </div>
+    <div class="stat-card green">
+      <div class="icon"><i class="fa-solid fa-box-open"></i></div>
+      <div class="info">
+        <h3>{{ orders.length }}</h3>
+        <p>Активни Поръчки</p>
       </div>
-      <div class="stat-card black">
-        <span class="stat-label">Оборот (Месец)</span>
-        <span class="stat-value">{{ calculateMonthlyRevenue() }} лв.</span>
+    </div>
+    <div class="stat-card dark">
+      <div class="icon"><i class="fa-solid fa-wallet"></i></div>
+      <div class="info">
+        <h3>{{ revenue }} лв.</h3>
+        <p>Приблизителен Оборот</p>
       </div>
     </div>
   </div>
 
   <div class="controls-bar">
-    
     <div class="tabs">
-      <button 
-        [class.active]="activeTab === 'orders'" 
-        (click)="activeTab = 'orders'">
-        Продукти
+      <button [class.active]="activeTab === 'bookings'" (click)="activeTab = 'bookings'">
+        График / Часове
       </button>
-      <button 
-        [class.active]="activeTab === 'appointments'" 
-        (click)="activeTab = 'appointments'">
-        Запазени Часове
+      <button [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+        Продукти / Поръчки
       </button>
     </div>
 
     <div class="actions">
-      <div class="search-box">
+      <div class="search-wrap">
         <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" placeholder="Търсене по име/тел..." [(ngModel)]="searchTerm">
+        <input type="text" placeholder="Търсене..." [(ngModel)]="searchTerm">
       </div>
-      
-      <button class="export-btn" (click)="exportToExcel()">
-        <i class="fa-solid fa-file-excel"></i> ИЗТЕГЛИ СПРАВКА
+      <button class="excel-btn" (click)="exportToExcel()">
+        <i class="fa-solid fa-file-excel"></i> Експорт
       </button>
     </div>
   </div>
+
+  @if (activeTab === 'bookings') {
+    <div class="table-container fade-in">
+      <table>
+        <thead>
+  <tr>
+    <th>Дата & Час</th>
+    <th>Клиент</th>
+    <th>Контакти</th>
+    <th>Статус / Действие</th> </tr>
+</thead>
+<tbody>
+  @for (booking of filteredBookings; track booking._id) {
+    <tr [class.row-cancelled]="booking.status === 'Cancelled'"> <td>
+        <div class="date-badge">
+          <span class="d-date">{{ booking.date }}</span>
+          <span class="d-time">{{ booking.time }}</span>
+        </div>
+      </td>
+
+      <td><strong>{{ booking.user.name }}</strong><br><small>{{ booking.user.address }}</small></td>
+
+      <td>
+         <div class="contact-col">
+            <a [href]="'tel:' + booking.user.phone">{{ booking.user.phone }}</a>
+         </div>
+      </td>
+
+      <td>
+        <div class="status-actions">
+            
+            <select 
+                class="status-select" 
+                [ngClass]="getStatusClass(booking.status)" 
+                (change)="onStatusChange(booking, $event)"
+                [value]="booking.status || 'Pending'"> @for (opt of statusOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                }
+            </select>
+
+            <button class="icon-btn trash" (click)="deleteBooking(booking._id)" title="Изтрий записа">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+      </td>
+
+    </tr>
+  }
+ </tbody>
+      </table>
+    </div>
+  }
 
   @if (activeTab === 'orders') {
     <div class="table-container fade-in">
       <table>
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>Дата</th>
-            <th>Клиент</th>
-            <th>Продукти</th>
-            <th>Сума</th>
-            <th>Статус</th>
-            <th>Действие</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (order of filteredOrders; track order.id) {
-            <tr>
-              <td>#{{ order.id }}</td>
-              <td>{{ order.date }}</td>
-              <td>
-                <div class="client-info">
-                  <strong>{{ order.customerName }}</strong>
-                  <span>{{ order.phone }}</span>
-                </div>
-              </td>
-              <td>
-                <span class="product-summary" title="{{ order.items }}">{{ order.items }}</span>
-              </td>
-              <td class="price-cell">{{ order.total }} лв.</td>
-              <td>
-                <span class="status-badge" [ngClass]="order.status">
-                  {{ getStatusLabel(order.status) }}
-                </span>
-              </td>
-              <td>
-                <select (change)="updateOrderStatus(order, $event)" [value]="order.status" class="status-select">
-                  <option value="pending">Чакаща</option>
-                  <option value="shipped">Изпратена</option>
-                  <option value="completed">Завършена</option>
-                  <option value="cancelled">Отказ</option>
-                </select>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
+  <tr>
+    <th>ID / Дата</th>
+    <th>Клиент</th>
+    <th>Продукт</th>
+    <th>Сума</th>
+    <th>Статус / Действие</th> </tr>
+</thead>
+<tbody>
+  @for (order of filteredOrders; track order.id) {
+    <tr [class.row-cancelled]="order.status === 'cancelled'">
+      
+      <td>
+        <strong style="color: #333;">#{{ order.id }}</strong><br>
+        <small style="color: #777;">{{ order.date }}</small>
+      </td>
 
-  @if (activeTab === 'appointments') {
-    <div class="table-container fade-in">
-      <table>
-        <thead>
-          <tr>
-            <th>Дата & Час</th>
-            <th>Клиент</th>
-            <th>Адрес</th>
-            <th>Услуга</th>
-            <th>Статус</th>
-            <th>Действие</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (app of filteredAppointments; track app.id) {
-            <tr>
-              <td class="date-cell">
-                <strong>{{ app.date }}</strong>
-                <span>{{ app.time }}</span>
-              </td>
-              <td>
-                <div class="client-info">
-                  <strong>{{ app.customerName }}</strong>
-                  <span>{{ app.phone }}</span>
-                </div>
-              </td>
-              <td>{{ app.address }}</td>
-              <td>{{ app.serviceType }}</td>
-              <td>
-                <span class="status-badge" [ngClass]="app.status">
-                  {{ getStatusLabel(app.status) }}
-                </span>
-              </td>
-              <td>
-                <div class="action-buttons">
-                    <button class="icon-btn check" (click)="completeAppointment(app)" title="Завърши">
-                        <i class="fa-solid fa-check"></i>
-                    </button>
-                    <button class="icon-btn trash" (click)="cancelAppointment(app)" title="Откажи">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
+      <td>
+        <strong>{{ order.customer }}</strong><br>
+        <a [href]="'tel:' + order.phone" style="color: #007bff; text-decoration: none;">
+            {{ order.phone }}
+        </a>
+      </td>
+
+      <td style="max-width: 200px;">{{ order.product }}</td>
+
+      <td style="font-weight: bold;">{{ order.price }} лв.</td>
+
+      <td>
+        <div class="status-actions">
+            
+            <select 
+                class="status-select" 
+                [ngClass]="getOrderStatusClass(order.status)" 
+                (change)="onOrderStatusChange(order, $event)"
+                [value]="order.status">
+                
+                @for (opt of orderStatusOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                }
+            </select>
+
+            <button class="icon-btn trash" (click)="deleteOrder(order.id)" title="Изтрий поръчката">
+                <i class="fa-solid fa-trash"></i>
+            </button>
+        </div>
+      </td>
+
+    </tr>
+  }
+</tbody>
       </table>
     </div>
   }

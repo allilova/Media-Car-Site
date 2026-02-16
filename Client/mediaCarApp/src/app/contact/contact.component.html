@@ -1,17 +1,32 @@
 <div class="contact-card">
-    <div class="logo-box">
-        <img src="logo.png" alt="Auto Media Garage Logo">
-    </div>
     
+    <div class="logo-box">
+        <img src="logo.png" alt="Logo"> </div>
+
     <div class="info-box">
-        <h2>Борислав Борисов</h2>
-        <p class="phone">Телефон: <strong>0899064299</strong></p>
-        
-        <label for="inquiry">Направи запитване:</label>
-        <textarea id="inquiry" rows="4"></textarea>
-        
-        <div class="button-container">
-            <button>Изпрати</button>
-        </div>
+        <h2>Свържете се с нас</h2>
+        <div class="phone">
+            <i class="fa-solid fa-phone"></i> 0899064299        </div>
+
+        <form (ngSubmit)="onSubmit()" #contactForm="ngForm">
+            
+            <label>Име</label>
+            <input type="text" name="name" [(ngModel)]="formData.name" required placeholder="Вашето име...">
+
+            <label>Имейл</label>
+            <input type="email" name="email" [(ngModel)]="formData.email" required placeholder="Вашият имейл...">
+
+            <label>Тема</label>
+            <input type="text" name="subject" [(ngModel)]="formData.subject" placeholder="Относно...">
+
+            <label>Съобщение</label>
+            <textarea name="message" [(ngModel)]="formData.message" rows="4" required placeholder="Напишете вашето запитване..."></textarea>
+
+            <div class="button-container">
+                <button type="submit" [disabled]="isSending">
+                    {{ isSending ? 'ИЗПРАЩАНЕ...' : 'ИЗПРАТИ' }}
+                </button>
+            </div>
+        </form>
     </div>
 </div>

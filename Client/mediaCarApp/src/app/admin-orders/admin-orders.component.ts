@@ -1,128 +1,159 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { BookingService } from '../services/booking.service';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-admin-orders',
+  standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './admin-orders.component.html',
-  styleUrl: './admin-orders.component.css'
+  styleUrls: ['./admin-orders.component.css']
 })
-export class AdminOrdersComponent {
-activeTab: 'orders' | 'appointments' = 'orders';
+export class AdminOrdersComponent implements OnInit {
+  
+  activeTab: 'orders' | 'bookings' = 'bookings';
   searchTerm: string = '';
 
-  // --- MOCK ДАННИ (Примерни) ---
+
+  bookings: any[] = [];
+
   
   orders = [
-    { id: 1024, date: '2023-10-25', customerName: 'Иван Петров', phone: '0888123456', items: 'VW Passat Navigation, Задна камера', total: 285, status: 'pending' },
-    { id: 1023, date: '2023-10-24', customerName: 'Георги Иванов', phone: '0899111222', items: 'BMW E46 Android', total: 290, status: 'completed' },
-    { id: 1022, date: '2023-10-23', customerName: 'Мария Димитрова', phone: '0877333444', items: 'Audi A3 Media', total: 320, status: 'shipped' },
-    { id: 1021, date: '2023-10-22', customerName: 'Стефан Стоянов', phone: '0888999888', items: 'OBD скенер', total: 20, status: 'cancelled' },
+    { id: 105, date: '15 Фев 2024', customer: 'Иван Петров', phone: '0888123456', product: 'VW Passat Navigation', price: 270, status: 'pending' },
+    { id: 104, date: '14 Фев 2024', customer: 'Георги Илиев', phone: '0877999888', product: 'Задна Камера', price: 50, status: 'shipped' },
+    { id: 103, date: '12 Фев 2024', customer: 'Мария Николова', phone: '0899111222', product: 'Android Media BMW E46', price: 320, status: 'completed' }
   ];
 
-  appointments = [
-    { id: 55, date: '2023-10-27', time: '14:00', customerName: 'Петър Колев', phone: '0887654321', address: 'София, ул. Витоша 5', serviceType: 'Монтаж на медия', status: 'pending' },
-    { id: 54, date: '2023-10-26', time: '10:00', customerName: 'Елена Николова', phone: '0898555666', address: 'София, Младост 4', serviceType: 'Монтаж + Камера', status: 'completed' }
+  statusOptions = [
+    { value: 'Pending', label: 'Чакаща' },
+    { value: 'Confirmed', label: 'Потвърдена' },
+    { value: 'Completed', label: 'Изпълнена' },
+    { value: 'Cancelled', label: 'Отказана' }
   ];
 
-  // --- GETTERS (Филтриране) ---
+  orderStatusOptions = [
+    { value: 'pending', label: 'Чакаща' },
+    { value: 'shipped', label: 'Изпратена' },
+    { value: 'completed', label: 'Завършена' },
+    { value: 'cancelled', label: 'Отказана' }
+  ];
+
+  constructor(private bookingService: BookingService) {}
+
+  ngOnInit() {
+    this.loadBookings();
+  }
+
+  // --- ЗАРЕЖДАНЕ НА ДАННИ ---
+  loadBookings() {
+    this.bookingService.getAllBookings().subscribe({
+      next: (data) => {
+        this.bookings = data;
+      },
+      error: (err) => console.error('Грешка при зареждане на часове:', err)
+    });
+  }
+
+  // --- ДЕЙСТВИЯ ---
+  deleteBooking(id: string) {
+    if(confirm('Сигурни ли сте, че искате да изтриете тази резервация?')) {
+      this.bookingService.deleteBooking(id).subscribe(() => {
+        this.loadBookings(); 
+      });
+    }
+  }
+
+  
+  deleteOrder(id: number) {
+    if(confirm('Изтриване на поръчка?')) {
+      this.orders = this.orders.filter(o => o.id !== id);
+    }
+  }
+  onStatusChange(booking: any, event: any) {
+    const newStatus = event.target.value;
+    
+    this.bookingService.updateBookingStatus(booking._id, newStatus).subscribe({
+      next: (updated) => {
+        booking.status = newStatus; 
+      },
+      error: (err) => {
+        alert('Грешка при смяна на статуса');
+        console.error(err);
+      }
+    });
+  }
+
+ 
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'Pending': return 'status-pending';
+      case 'Confirmed': return 'status-confirmed';
+      case 'Completed': return 'status-completed';
+      case 'Cancelled': return 'status-cancelled';
+      default: return '';
+    }
+  }
+
+  onOrderStatusChange(order: any, event: any) {
+    const newStatus = event.target.value;
+    order.status = newStatus; 
+    // Тук по-късно ще сложим: this.orderService.updateStatus(...)
+  }
+
+  getOrderStatusClass(status: string): string {
+    switch (status) {
+      case 'pending': return 'status-pending';
+      case 'shipped': return 'status-shipped'; // Това е новото (Синьо)
+      case 'completed': return 'status-completed';
+      case 'cancelled': return 'status-cancelled';
+      default: return '';
+    }
+  }
+  // --- ФИЛТРИРАНЕ (Търсачка) ---
+  get filteredBookings() {
+    return this.bookings.filter(b => 
+      b.user.name.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
+      b.user.phone.includes(this.searchTerm)
+    );
+  }
 
   get filteredOrders() {
     return this.orders.filter(o => 
-      o.customerName.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
+      o.customer.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
       o.id.toString().includes(this.searchTerm)
     );
   }
 
-  get filteredAppointments() {
-    return this.appointments.filter(a => 
-      a.customerName.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
-      a.date.includes(this.searchTerm)
-    );
-  }
-
-  // --- СТАТИСТИКА ---
-  getPendingOrdersCount() {
-    return this.orders.filter(o => o.status === 'pending').length;
-  }
-
-  getPendingAppointmentsCount() {
-    return this.appointments.filter(a => a.status === 'pending').length;
-  }
-
-  calculateMonthlyRevenue() {
-    return this.orders
-      .filter(o => o.status !== 'cancelled')
-      .reduce((acc, curr) => acc + curr.total, 0);
-  }
-
-  // --- HELPER ФУНКЦИИ ---
-  
-  getStatusLabel(status: string) {
-    const labels: any = {
-      'pending': 'Чакаща',
-      'shipped': 'Изпратена',
-      'completed': 'Завършена',
-      'cancelled': 'Отказана'
-    };
-    return labels[status] || status;
-  }
-
-  updateOrderStatus(order: any, event: any) {
-    order.status = event.target.value;
-    // Тук би извикал API за запис
-  }
-
-  completeAppointment(app: any) {
-    app.status = 'completed';
-  }
-
-  cancelAppointment(app: any) {
-    app.status = 'cancelled';
-  }
-
-  // --- ЕКСПОРТ КЪМ EXCEL ---
-  
+  // --- EXCEL EXPORT ---
   exportToExcel() {
     let dataToExport = [];
     let fileName = '';
 
-    if (this.activeTab === 'orders') {
-      
-      dataToExport = this.filteredOrders.map(o => ({
-        'ID Поръчка': o.id,
-        'Дата': o.date,
-        'Име на клиент': o.customerName,
-        'Телефон': o.phone,
-        'Артикули': o.items,
-        'Сума (лв)': o.total,
-        'Статус': this.getStatusLabel(o.status)
+    if (this.activeTab === 'bookings') {
+      dataToExport = this.filteredBookings.map(b => ({
+        'Дата': b.date,
+        'Час': b.time,
+        'Клиент': b.user.name,
+        'Телефон': b.user.phone,
+        'Адрес': b.user.address,
+        'Имейл': b.user.email
       }));
-      fileName = 'Spravka_Porachki.xlsx';
+      fileName = 'Reservations.xlsx';
     } else {
-     
-      dataToExport = this.filteredAppointments.map(a => ({
-        'Дата': a.date,
-        'Час': a.time,
-        'Клиент': a.customerName,
-        'Телефон': a.phone,
-        'Адрес': a.address,
-        'Услуга': a.serviceType,
-        'Статус': this.getStatusLabel(a.status)
-      }));
-      fileName = 'Spravka_Rezervacii.xlsx';
+      dataToExport = this.filteredOrders;
+      fileName = 'Orders.xlsx';
     }
 
-  
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
-
-   
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-
-    
     XLSX.writeFile(wb, fileName);
+  }
+
+  // --- СТАТИСТИКА ---
+  get revenue() {
+    return this.orders.reduce((acc, o) => acc + o.price, 0);
   }
 }
