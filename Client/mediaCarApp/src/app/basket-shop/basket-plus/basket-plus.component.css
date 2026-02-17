@@ -89,6 +89,25 @@ input:checked + .slider:before { transform: translateX(24px); }
 .btn-black:hover { background: #333; }
 
 
+.modal-content {
+    position: relative; 
+    
+}
+
+.close-icon {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close-icon:hover {
+    color: #000;
+}
 @media (max-width: 600px) {
   .accessory-grid { grid-template-columns: 1fr; }
   .modal-footer { flex-direction: column; }

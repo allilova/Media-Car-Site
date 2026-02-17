@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../services/booking.service';
+import { OrderService } from '../services/order.service';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -18,13 +19,7 @@ export class AdminOrdersComponent implements OnInit {
 
 
   bookings: any[] = [];
-
-  
-  orders = [
-    { id: 105, date: '15 Фев 2024', customer: 'Иван Петров', phone: '0888123456', product: 'VW Passat Navigation', price: 270, status: 'pending' },
-    { id: 104, date: '14 Фев 2024', customer: 'Георги Илиев', phone: '0877999888', product: 'Задна Камера', price: 50, status: 'shipped' },
-    { id: 103, date: '12 Фев 2024', customer: 'Мария Николова', phone: '0899111222', product: 'Android Media BMW E46', price: 320, status: 'completed' }
-  ];
+  orders: any[] = [];
 
   statusOptions = [
     { value: 'Pending', label: 'Чакаща' },
@@ -40,10 +35,13 @@ export class AdminOrdersComponent implements OnInit {
     { value: 'cancelled', label: 'Отказана' }
   ];
 
-  constructor(private bookingService: BookingService) {}
+  constructor(
+    private bookingService: BookingService, 
+    private orderService: OrderService) {}
 
   ngOnInit() {
     this.loadBookings();
+    this.loadOrders();
   }
 
   // --- ЗАРЕЖДАНЕ НА ДАННИ ---
@@ -53,6 +51,15 @@ export class AdminOrdersComponent implements OnInit {
         this.bookings = data;
       },
       error: (err) => console.error('Грешка при зареждане на часове:', err)
+    });
+  }
+  loadOrders() {
+    this.orderService.getOrders().subscribe({
+      next: (data) => {
+        this.orders = data;
+        console.log("Заредени поръчки:", data);
+      },
+      error: (err) => console.error(err)
     });
   }
 
@@ -66,9 +73,12 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   
-  deleteOrder(id: number) {
-    if(confirm('Изтриване на поръчка?')) {
-      this.orders = this.orders.filter(o => o.id !== id);
+    
+  deleteOrder(id: string) {
+    if(confirm('Сигурни ли сте, че искате да изтриете тази поръчка?')) {
+      this.orderService.deleteOrder(id).subscribe(() => {
+        this.loadOrders(); 
+      });
     }
   }
   onStatusChange(booking: any, event: any) {
@@ -96,10 +106,13 @@ export class AdminOrdersComponent implements OnInit {
     }
   }
 
+   
+  
   onOrderStatusChange(order: any, event: any) {
     const newStatus = event.target.value;
-    order.status = newStatus; 
-    // Тук по-късно ще сложим: this.orderService.updateStatus(...)
+    this.orderService.updateStatus(order._id, newStatus).subscribe(() => {
+       order.status = newStatus; 
+    });
   }
 
   getOrderStatusClass(status: string): string {
@@ -119,10 +132,11 @@ export class AdminOrdersComponent implements OnInit {
     );
   }
 
-  get filteredOrders() {
+    get filteredOrders() {
     return this.orders.filter(o => 
-      o.customer.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
-      o.id.toString().includes(this.searchTerm)
+      o.customer.name.toLowerCase().includes(this.searchTerm.toLowerCase()) || 
+      o.customer.phone.includes(this.searchTerm) ||
+      o._id.includes(this.searchTerm)
     );
   }
 
@@ -154,6 +168,8 @@ export class AdminOrdersComponent implements OnInit {
 
   // --- СТАТИСТИКА ---
   get revenue() {
-    return this.orders.reduce((acc, o) => acc + o.price, 0);
+    return this.orders
+      .filter(o => o.status !== 'cancelled')
+      .reduce((acc, o) => acc + o.totalPrice, 0);
   }
-}
+  }

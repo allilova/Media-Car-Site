@@ -102,60 +102,75 @@
     </div>
   }
 
-  @if (activeTab === 'orders') {
+ @if (activeTab === 'orders') {
     <div class="table-container fade-in">
       <table>
         <thead>
-  <tr>
-    <th>ID / Дата</th>
-    <th>Клиент</th>
-    <th>Продукт</th>
-    <th>Сума</th>
-    <th>Статус / Действие</th> </tr>
-</thead>
-<tbody>
-  @for (order of filteredOrders; track order.id) {
-    <tr [class.row-cancelled]="order.status === 'cancelled'">
-      
-      <td>
-        <strong style="color: #333;">#{{ order.id }}</strong><br>
-        <small style="color: #777;">{{ order.date }}</small>
-      </td>
+          <tr>
+            <th>ID / Дата</th>
+            <th>Клиент / Доставка</th>
+            <th>Продукти</th>
+            <th>Сума</th>
+            <th>Статус / Действие</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of filteredOrders; track order._id) {
+            <tr [class.row-cancelled]="order.status === 'cancelled'">
+              
+              <td>
+                <strong style="color: #333;" title="{{ order._id }}">#{{ order._id | slice:-6 }}</strong><br>
+                <small style="color: #777;">{{ order.createdAt | date:'dd.MM.yyyy' }}</small>
+              </td>
 
-      <td>
-        <strong>{{ order.customer }}</strong><br>
-        <a [href]="'tel:' + order.phone" style="color: #007bff; text-decoration: none;">
-            {{ order.phone }}
-        </a>
-      </td>
+              <td>
+                <strong>{{ order.customer.name }}</strong><br>
+                <a [href]="'tel:' + order.customer.phone" style="color: #007bff; text-decoration: none;">
+                    {{ order.customer.phone }}
+                </a>
+                <div style="font-size: 11px; color: #555; margin-top: 4px; max-width: 200px;">
+                    {{ order.customer.address }}
+                </div>
+              </td>
 
-      <td style="max-width: 200px;">{{ order.product }}</td>
-
-      <td style="font-weight: bold;">{{ order.price }} лв.</td>
-
-      <td>
-        <div class="status-actions">
-            
-            <select 
-                class="status-select" 
-                [ngClass]="getOrderStatusClass(order.status)" 
-                (change)="onOrderStatusChange(order, $event)"
-                [value]="order.status">
-                
-                @for (opt of orderStatusOptions; track opt.value) {
-                    <option [value]="opt.value">{{ opt.label }}</option>
+              <td style="max-width: 250px;">
+                @for (item of order.items; track item.title) {
+                    <div style="border-bottom: 1px dashed #eee; padding-bottom: 2px; margin-bottom: 2px;">
+                        • {{ item.title }} <small>x{{ item.quantity }}</small>
+                    </div>
                 }
-            </select>
+              </td>
 
-            <button class="icon-btn trash" (click)="deleteOrder(order.id)" title="Изтрий поръчката">
-                <i class="fa-solid fa-trash"></i>
-            </button>
-        </div>
-      </td>
+              <td style="font-weight: bold;">{{ order.totalPrice }} лв.</td>
 
-    </tr>
-  }
-</tbody>
+              <td>
+                <div class="status-actions">
+                    <select 
+                        class="status-select" 
+                        [class.status-pending]="order.status === 'pending' || order.status === 'Pending'"
+                        [class.status-shipped]="order.status === 'shipped'"
+                        [class.status-completed]="order.status === 'completed'"
+                        [class.status-cancelled]="order.status === 'cancelled'"
+                        (change)="onOrderStatusChange(order, $event)"
+                        [value]="order.status">
+                        
+                        @for (opt of orderStatusOptions; track opt.value) {
+                            <option [value]="opt.value">{{ opt.label }}</option>
+                        }
+                    </select>
+
+                    <button class="icon-btn trash" (click)="deleteOrder(order._id)" title="Изтрий поръчката">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+              </td>
+
+            </tr>
+          }
+          @if (filteredOrders.length === 0) {
+             <tr><td colspan="5" class="empty-cell">Няма намерени поръчки.</td></tr>
+          }
+        </tbody>
       </table>
     </div>
   }

@@ -1,6 +1,8 @@
 <div class="modal-overlay">
   <div class="modal-content">
-    
+    <button class="close-icon" (click)="close()">
+        <i class="fa-solid fa-times"></i>
+    </button>
     <div class="modal-header">
       <h3>Желаете ли професионален монтаж?</h3>
       <p>Спестете време! Ние ще дойдем на адрес и ще монтираме медията.</p>
@@ -15,7 +17,7 @@
         </div>
       </div>
       <label class="switch">
-        <input type="checkbox">
+        <input type="checkbox" (change)="toggleInstallation($event)">
         <span class="slider round"></span>
       </label>
     </div>
@@ -23,22 +25,31 @@
     <div class="accessories-section">
       <h4>Добави полезни аксесоари:</h4>
       <div class="accessory-grid">
+        
         <div class="accessory-card">
-          <img src="accessoriesExample.PNG" alt="Камера"> <div class="acc-details">
+          <img src="assets/camera.png" alt="Камера"> 
+          <div class="acc-details">
             <span>Задна камера</span>
             <span class="price">+15 лв</span>
           </div>
-          <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
+          <button class="add-btn" 
+                  (click)="addAccessory('Задна камера', 15, 'assets/camera.png', 'acc-cam-01')">
+            <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
         
         <div class="accessory-card">
-          <img src="accessoriesExample.PNG" alt="OBD">
+          <img src="assets/obd.png" alt="OBD">
           <div class="acc-details">
             <span>OBD скенер</span>
             <span class="price">+20 лв</span>
           </div>
-          <button class="add-btn"><i class="fa-solid fa-plus"></i></button>
+          <button class="add-btn" 
+                  (click)="addAccessory('OBD Скенер', 20, 'assets/obd.png', 'acc-obd-01')">
+            <i class="fa-solid fa-plus"></i>
+          </button>
         </div>
+
       </div>
     </div>
 

@@ -60,7 +60,26 @@ private cartKey = 'my_shop_cart';
 
     this.updateCart(currentCart);
   }
+removeItem(productId: string) {
+    const currentItems = this.cartSubject.value;
+    
 
+    const updatedItems = currentItems.filter((item: any) => item._id !== productId);
+    
+    this.cartSubject.next(updatedItems);
+    this.saveCartToLocalStorage(updatedItems);
+  }
+
+  private saveCartToLocalStorage(items: any[]) {
+    localStorage.setItem('cart', JSON.stringify(items));
+  }
+
+  private loadCartFromLocalStorage(): any[] {
+    const saved = localStorage.getItem('cart');
+    return saved ? JSON.parse(saved) : [];
+  }
+
+ 
   
   removeFromCart(productId: string, variantId: number) {
     const currentCart = this.cartSubject.value;
@@ -86,7 +105,8 @@ private cartKey = 'my_shop_cart';
   }
 
   clearCart() {
-    this.updateCart([]);
+    this.cartSubject.next([]);
+    localStorage.removeItem('cart');
   }
 
   private updateCart(cart: CartItem[]) {
@@ -95,7 +115,9 @@ private cartKey = 'my_shop_cart';
   }
 
  
-  getTotalPrice(): number {
-    return this.cartSubject.value.reduce((total, item) => total + (item.price * item.quantity), 0);
+  getTotalPrice() {
+     return this.cartSubject.value.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   }
+
+
 }

@@ -47,10 +47,15 @@
       }
     </div>
 
-    <div class="basket-footer">
-      <div class="total-price">Общо: {{ totalPrice }} лв</div>
-      <button class="buy-btn" routerLink="/checkout">ПОРЪЧАЙ</button>
-    </div>
-  }
+    <<div class="cart-summary">
+    <h3>Общо: {{ totalPrice }} лв.</h3>
+    
+    <button class="checkout-btn" (click)="openCheckoutFlow()"> ПОРЪЧАЙ </button>
+</div>
 
+
+@if (showUpsellModal) {
+    <app-basket-plus (closeModal)="showUpsellModal = false"></app-basket-plus>
+}
+  }
 </div>
