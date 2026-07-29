@@ -18,22 +18,23 @@ const transporter = nodemailer.createTransport({
 
 router.post('/', async (req, res) => {
     try {
-        const { customer, items, totalPrice } = req.body;
-
+        
+        const { customer, items, totalPrice, paymentMethod } = req.body;
         
         const newOrder = await Order.create({
             customer,
             items,
             totalPrice,
+            paymentMethod: paymentMethod || 'Наложен платеж', 
             status: 'pending'
         });
 
-       
-        const itemsListHtml = items.map(item => 
-            `<li>${item.title} (x${item.quantity}) - ${item.price} лв.</li>`
-        ).join('');
+        
+        const itemsListHtml = items.map(item => {
+            const variantText = item.variant ? `<br><small style="color: #666;">Детайли: ${item.variant}</small>` : '';
+            return `<li style="margin-bottom: 10px;">${item.title} (x${item.quantity}) - ${item.price} лв.${variantText}</li>`;
+        }).join('');
 
-      
         if (customer.email) {
             const mailOptions = {
                 from: '"Media Car Garage" <borislav.borisov2003b@gmail.com>',
@@ -48,6 +49,7 @@ router.post('/', async (req, res) => {
                         <ul>${itemsListHtml}</ul>
                         
                         <p><strong>Обща сума: ${totalPrice} лв.</strong></p>
+                        <p><strong>Начин на плащане:</strong> ${newOrder.paymentMethod}</p>
                         <p><strong>Адрес за доставка:</strong> ${customer.address}</p>
                         
                         <hr>
@@ -55,8 +57,6 @@ router.post('/', async (req, res) => {
                     </div>
                 `
             };
-
-            
             transporter.sendMail(mailOptions).catch(err => console.error('Грешка при мейл:', err));
         }
 
@@ -85,7 +85,6 @@ router.put('/:id', isAdmin, async (req, res) => {
         const { status } = req.body;
         const orderId = req.params.id;
 
-       
         const updatedOrder = await Order.findByIdAndUpdate(
             orderId, 
             { status: status }, 
@@ -96,9 +95,7 @@ router.put('/:id', isAdmin, async (req, res) => {
             return res.status(404).json({ error: 'Поръчката не е намерена' });
         }
 
-        
         if (status === 'shipped' && updatedOrder.customer.email) {
-            
             const mailOptions = {
                 from: '"Media Car Garage" <borislav.borisov2003b@gmail.com>',
                 to: updatedOrder.customer.email,
@@ -119,8 +116,7 @@ router.put('/:id', isAdmin, async (req, res) => {
                         <p>Благодарим Ви, че избрахте нас!</p>
                     </div>
                 `
-            };
-
+           };
             transporter.sendMail(mailOptions).catch(err => console.error('Грешка при мейл за изпращане:', err));
         }
 
@@ -142,34 +138,12 @@ router.delete('/:id', isAdmin, async (req, res) => {
     }
 });
 
-
-
-
-router.post('/', async (req, res) => {
+router.delete('/:id', isAdmin, async (req, res) => {
     try {
-        const { customer, items, totalPrice } = req.body;
-
-        const newOrder = await Order.create({
-            customer,
-            items,
-            totalPrice
-        });
-
-        console.log('Нова поръчка създадена:', newOrder._id);
-        res.status(201).json(newOrder);
+        await Order.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Поръчката е изтрита' });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Грешка при създаване на поръчката.' });
-    }
-});
-
-
-router.get('/', isAdmin, async (req, res) => {
-    try {
-        const orders = await Order.find().sort({ createdAt: -1 });
-        res.json(orders);
-    } catch (err) {
-        res.status(500).json({ error: 'Грешка при зареждане на поръчките.' });
+        res.status(500).json({ error: 'Грешка при изтриване' });
     }
 });
 

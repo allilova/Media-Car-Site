@@ -1,37 +1,65 @@
-<div class="main-card">
-    <div class="img-container">
-        <img src="servicesImg.png" alt="Монтаж на мултимедия">
-    </div>
+<div class="catalog-container">
     
-    <div class="text-content">
-        <h1>Монтаж на адрес</h1>
+    <div class="catalog-header">
+        <h1 class="section-title">Услуги</h1>
         
-        <p class="description">
-            Искате перфектен резултат без главоболия? Ние предлагаме бърз и качествен монтаж на всички видове мултимедийни системи, 
-            <strong>без следи от интервенция по таблото</strong>.
-            <br><br>
-            Спестете време – ние идваме на адрес при вас! Демонтираме старото радио и слагаме новата медия.
-        </p>
-
-        <ul class="service-details">
-            <li>
-                <i class="fa-solid fa-location-dot"></i> 
-                <span><strong>Локация:</strong> Ваш адрес (гр. София)</span>
-            </li>
-            <li>
-                <i class="fa-regular fa-clock"></i> 
-                <span><strong>Кога:</strong> Делник след 18:00 / Събота и Неделя</span>
-            </li>
-            <li>
-                <i class="fa-solid fa-stopwatch"></i> 
-                <span><strong>Времетраене:</strong> Около 1 час</span>
-            </li>
-            <li>
-                <i class="fa-solid fa-tag"></i> 
-                <span><strong>Цена:</strong> <span class="price">70 лв.</span></span>
-            </li>
-        </ul>
-
-        <button class="cta-button" routerLink="/booking">Запази час</button>
+         @if (isAdmin) {
+        <button class="add-new-btn" routerLink="/admin-create">
+            <i class="fa-solid fa-plus"></i> Добави нов
+        </button>
+    }
     </div>
+
+    @if (services.length === 0) {
+        <div>
+            В момента няма добавени услуги.
+        </div>
+    }
+
+    @for (service of services; track service._id) {
+        <div class="main-card" style="position: relative;">
+            @if (isAdmin) {
+                <div class="card-admin-actions">
+                    <button class="icon-btn edit-btn" [routerLink]="['/admin-edit', service._id]" title="Редактирай">
+                        <i class="fa-solid fa-pen"></i>
+                    </button>
+                    
+                    <button class="icon-btn delete-btn" (click)="deleteService(service._id)" title="Изтрий">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            }
+            
+
+            <div class="img-container">
+                <img [src]="service.images && service.images.length > 0 ? service.images[0] : 'assets/servicesImg.png'" 
+                     [alt]="service.title">
+            </div>
+            
+            <div class="text-content">
+                <h1>{{ service.title }}</h1>
+                
+                <p class="description" >{{ service.description }}</p>
+
+                <ul class="service-details">
+                    <li>
+                        <i class="fa-solid fa-tag"></i> 
+                        <span><strong>Цена:</strong> 
+                            <span class="price">
+                                @if (service.oldPrice) {
+                                    <span>
+                                        {{ service.oldPrice }} лв.
+                                    </span>
+                                }
+                                {{ service.price }} лв.
+                            </span>
+                        </span>
+                    </li>
+                </ul>
+
+                <button class="cta-button" routerLink="/booking">Запази час</button>
+            </div>
+            
+        </div>
+    }
 </div>

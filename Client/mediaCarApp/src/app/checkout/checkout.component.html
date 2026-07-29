@@ -61,12 +61,69 @@
 
       <div class="form-section">
         <h3>3. Начин на плащане</h3>
-        <label class="payment-method">
-          <input type="radio" checked disabled> 
-          <span>Наложен платеж (Плащане при доставка)</span>
-        </label>
-      </div>
+        
+        <div class="delivery-options" style="margin-bottom: 20px;">
+          <label class="radio-card" [class.selected-card]="formData.paymentMethod === 'cod'">
+            <input type="radio" 
+                   name="payment" 
+                   value="cod" 
+                   [(ngModel)]="formData.paymentMethod">
+            <div class="radio-content">
+              <span class="radio-title">Наложен платеж</span>
+              <span class="radio-desc">Плащане при доставка</span>
+            </div>
+          </label>
 
+          <label class="radio-card" [class.selected-card]="formData.paymentMethod === 'card'">
+            <input type="radio" 
+                   name="payment" 
+                   value="card" 
+                   [(ngModel)]="formData.paymentMethod">
+            <div class="radio-content">
+              <span class="radio-title">Банкова карта</span>
+              <span class="radio-desc">Сигурно плащане онлайн</span>
+            </div>
+          </label>
+        </div>
+
+        @if (formData.paymentMethod === 'card') {
+          <div class="card-details-form">
+            <h4 style="margin-bottom: 15px; font-size: 15px;">Въведете данни за картата:</h4>
+            
+            <div class="input-group">
+              <input type="text" 
+                     placeholder="Имена на картодържател" 
+                     class="full-width"
+                     [(ngModel)]="formData.cardName">
+            </div>
+            
+            <div class="input-group">
+              <input type="text" 
+                     placeholder="Номер на карта (16 цифри)" 
+                     class="full-width"
+                     maxlength="19"
+                     [(ngModel)]="formData.cardNumber">
+            </div>
+            
+            <div class="input-row">
+              <input type="text" 
+                     placeholder="ММ/ГГ" 
+                     maxlength="5"
+                     [(ngModel)]="formData.cardExpiry">
+              
+              <input type="password" 
+                     placeholder="CVV (3 цифри)" 
+                     maxlength="3"
+                     [(ngModel)]="formData.cardCvv">
+            </div>
+
+            <p class="security-note">
+              <i class="fa-solid fa-lock"></i> Вашите данни са защитени (Демонстрационна цел)
+            </p>
+          </div>
+        }
+
+      </div>
     </div>
 
     <div class="order-summary-column">

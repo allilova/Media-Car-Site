@@ -13,10 +13,11 @@ const orderSchema = new mongoose.Schema({
             title: String,
             quantity: Number,
             price: Number,
-            variant: String // напр. "4GB RAM / 64GB ROM"
+            variant: String 
         }
     ],
     totalPrice: { type: Number, required: true },
+    paymentMethod: { type: String, default: 'Наложен платеж' }, 
     status: {
         type: String,
         enum: ['pending', 'shipped', 'completed', 'cancelled'],

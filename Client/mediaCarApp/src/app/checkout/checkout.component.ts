@@ -17,14 +17,17 @@ export class CheckoutComponent implements OnInit {
   cartItems: any[] = [];
   totalPrice: number = 0;
 
-  
   formData = {
     name: '',
     phone: '',
     email: '',
     deliveryType: 'office',
     address: '',
-    paymentMethod: 'cod'    
+    paymentMethod: 'cod', 
+    cardName: '',
+    cardNumber: '',
+    cardExpiry: '',
+    cardCvv: ''
   };
 
   constructor(
@@ -34,11 +37,9 @@ export class CheckoutComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-   
     this.cartService.cart$.subscribe(items => {
       this.cartItems = items;
       this.totalPrice = this.cartService.getTotalPrice();
-      
       
       if (this.cartItems.length === 0) {
         this.router.navigate(['/home']);
@@ -47,13 +48,20 @@ export class CheckoutComponent implements OnInit {
   }
 
   placeOrder() {
-    
     if (!this.formData.name || !this.formData.phone || !this.formData.address) {
       alert('Моля, попълнете полетата за Име, Телефон и Адрес/Офис!');
       return;
     }
 
-    
+   
+    if (this.formData.paymentMethod === 'card') {
+      if (!this.formData.cardNumber || !this.formData.cardExpiry || !this.formData.cardCvv) {
+        alert('Моля, попълнете данните за банковата карта!');
+        return;
+      }
+    }
+
+   
     const orderData = {
       customer: {
         name: this.formData.name,
@@ -71,6 +79,7 @@ export class CheckoutComponent implements OnInit {
         variant: item.specs || 'Standard'
       })),
       totalPrice: this.totalPrice,
+      paymentMethod: this.formData.paymentMethod === 'cod' ? 'Наложен платеж' : 'Плащане с карта',
       status: 'Pending'
     };
 

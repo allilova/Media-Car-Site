@@ -34,32 +34,45 @@ private cartKey = 'my_shop_cart';
   }
 
 
-  addToCart(product: any, variant: any, quantity: number) {
+addToCart(product: any, variant: any, quantity: number) {
     const currentCart = this.cartSubject.value;
     
-    
+    // Безопасно взимане на id и цена, дори ако variant e null (напр. при услуги)
+    const vId = variant ? variant.id : 1;
+    const vPrice = variant ? variant.price : product.price;
+
     const existingItem = currentCart.find(item => 
-      item.id === product._id && item.variantId === variant.id
+      item.id === product._id && item.variantId === vId
     );
 
     if (existingItem) {
       existingItem.quantity += quantity;
     } else {
-     
+      // Определяне на характеристиките (specs) гъвкаво
+      const itemSpecs = variant && variant.specs 
+        ? variant.specs 
+        : (variant && variant.ram ? `${variant.ram}GB RAM / ${variant.rom}GB ROM - ${variant.cpu}` : product.specs || '');
+
+      // Определяне на снимката гъвкаво
+      const itemImage = product.images && product.images.length > 0 
+        ? product.images[0] 
+        : (product.img || 'sevicesImg.png');
+
       const newItem: CartItem = {
         id: product._id || product.id, 
-        variantId: variant.id,
+        variantId: vId,
         title: product.title,
-        image: product.images[0] || 'assets/placeholder.png', 
-        price: variant.price,
+        image: itemImage, 
+        price: vPrice,
         quantity: quantity,
-        specs: `${variant.ram}GB RAM / ${variant.rom}GB ROM - ${variant.cpu}`
+        specs: itemSpecs
       };
       currentCart.push(newItem);
     }
 
     this.updateCart(currentCart);
   }
+
 removeItem(productId: string) {
     const currentItems = this.cartSubject.value;
     

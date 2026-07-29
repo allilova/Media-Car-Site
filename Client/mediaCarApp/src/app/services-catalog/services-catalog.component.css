@@ -1,4 +1,46 @@
+/* --- ХЕДЪР И БУТОН "ДОБАВИ" --- */
+.catalog-header {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px 20px 20px;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin: 0;
+    color: #111;
+}
+
+/* Същият стил като в Мултимедии (Черен, заоблен) */
+.add-new-btn {
+    position: absolute;
+    right: 20px;
+    top: 40px; 
+    width: auto; 
+    background-color: #000;
+    color: white;
+    font-size: 14px;
+    padding: 8px 15px;
+    border-radius: 20px; 
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s;
+}
+
+.add-new-btn:hover {
+    background-color: #333;
+}
+
+
+/* --- ОСНОВНА КАРТА ЗА УСЛУГА --- */
 .main-card {
+    position: relative; /* Държи админ бутоните вътре в картата */
     display: flex;
     align-items: center; 
     justify-content: space-between;
@@ -6,11 +48,51 @@
     background-color: white;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
     max-width: 1200px;
-    margin: 40px auto; 
+    margin: 0 auto 40px auto; 
     gap: 50px; 
+    border-radius: 8px;
+}
+
+/* --- АДМИН БУТОНИ (Същите кръгли иконки като в Мултимедии) --- */
+.card-admin-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 8px;
+    z-index: 10; 
+}
+
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Прави ги перфектни кръгове */
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    background-color: rgba(255, 255, 255, 0.9); /* Бял полупрозрачен */
+    color: #000;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: #000;
+    color: #fff;
+    border-color: #000;
+}
+
+.delete-btn:hover {
+    background-color: #d32f2f; /* Става червено при посочване */
+    border-color: #d32f2f;
 }
 
 
+/* --- СНИМКА --- */
 .img-container {
     flex: 1;
 }
@@ -23,8 +105,9 @@
 }
 
 
+/* --- ТЕКСТ И ДЕТАЙЛИ --- */
 .text-content {
-    flex: 1;
+    flex: 1.2;
 }
 
 .text-content h1 {
@@ -39,8 +122,8 @@
     color: #444;
     line-height: 1.6;
     margin-bottom: 25px;
+    white-space: pre-wrap; 
 }
-
 
 .service-details {
     list-style: none; 
@@ -70,7 +153,6 @@
     font-size: 18px;
 }
 
-
 .cta-button {
     background-color: black;
     color: white;
@@ -83,27 +165,32 @@
     transition: background 0.3s;
 }
 
-.cta-button:hover {
-    background-color: #333;
-}
+.cta-button:hover { background-color: #333; }
 
 
+/* --- МОБИЛЕН ИЗГЛЕД --- */
 @media (max-width: 768px) {
+    .catalog-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 20px;
+        gap: 15px;
+    }
+
+    .add-new-btn {
+        position: static; 
+        margin-bottom: 20px;
+    }
+
     .main-card {
         flex-direction: column; 
         padding: 20px;
-        gap: 30px;
+        gap: 20px;
+        margin: 20px;
     }
 
-    .text-content {
-        text-align: center; 
-    }
-
-    .service-details li {
-        justify-content: center; 
-    }
-    
-    .cta-button {
-        width: 100%; 
-    }
+    .text-content { text-align: center; }
+    .service-details li { justify-content: center; }
+    .cta-button { width: 100%; }
 }

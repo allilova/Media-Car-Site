@@ -6,12 +6,14 @@ import { ProductService } from '../services/product.service';
 
 @Component({
   selector: 'app-admin-create',
+  standalone: true, 
   imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './admin-create.component.html',
   styleUrl: './admin-create.component.css'
 })
 export class AdminCreateComponent {
-product = {
+  
+  product: any = {
     title: '',
     category: 'multimedia',
     price: null,
@@ -24,14 +26,11 @@ product = {
         power: '4 x 45W'
     },
     variants: [{ ram: 2, rom: 32, price: 270, cpu: '4-ядрен' }]
-};
+  };
 
   previewImages: string[] = [];
 
- 
   constructor(private productService: ProductService, private router: Router) {}
-
- 
 
   onFileSelected(event: any) {
      if (event.target.files) {
@@ -45,29 +44,33 @@ product = {
     }
   }
   
- 
   onSubmit() {
+    
     const finalProduct = {
       ...this.product,
       images: this.previewImages 
     };
 
+    
+    if (finalProduct.category !== 'multimedia') {
+      finalProduct.variants = [];
+      finalProduct.specs = {};
+    }
+
     console.log('Изпращане към сървъра...', finalProduct);
 
-    
     this.productService.createProduct(finalProduct).subscribe({
       next: (response) => {
-        alert('Продуктът е добавен успешно!');
+        alert('Записът е добавен успешно!');
         this.router.navigate(['/']); 
       },
       error: (error) => {
         console.error('Грешка:', error);
-        alert('Възникна грешка при записа. Виж конзолата.');
+        alert('Възникна грешка при записа. Проверете конзолата.');
       }
     });
   }
   
- 
   addVariant() {
     this.product.variants.push({ ram: 2, rom: 32, price: 270, cpu: '4-ядрен'});
   }

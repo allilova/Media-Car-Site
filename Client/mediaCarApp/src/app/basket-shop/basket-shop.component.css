@@ -114,7 +114,8 @@
   margin-bottom: 15px;
 }
 
-.buy-btn {
+.checkout-btn {
+  margin-top: 10px;
   background-color: #000; 
   color: #fff;
   border: none;

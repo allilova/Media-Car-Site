@@ -17,35 +17,45 @@
         </div>
       </div>
       <label class="switch">
-        <input type="checkbox" (change)="toggleInstallation($event)">
+        <input type="checkbox" (change)="toggleInstallation($event)" [checked]="wantsInstallation">
         <span class="slider round"></span>
       </label>
     </div>
+
+    @if (wantsInstallation) {
+      <div class="datetime-picker" style="margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
+        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 14px;">Изберете удобен ден и час:</h4>
+        <div style="display: flex; gap: 10px;">
+          <input type="date" [(ngModel)]="installDate" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+          <input type="time" [(ngModel)]="installTime" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+      </div>
+    }
 
     <div class="accessories-section">
       <h4>Добави полезни аксесоари:</h4>
       <div class="accessory-grid">
         
         <div class="accessory-card">
-          <img src="assets/camera.png" alt="Камера"> 
+          <img src="accessoriesExample.PNG" alt="Камера"> 
           <div class="acc-details">
             <span>Задна камера</span>
             <span class="price">+15 лв</span>
           </div>
           <button class="add-btn" 
-                  (click)="addAccessory('Задна камера', 15, 'assets/camera.png', 'acc-cam-01')">
+                  (click)="addAccessory('Задна камера', 15, 'accessoriesExample.PNG', 'acc-cam-01')">
             <i class="fa-solid fa-plus"></i>
           </button>
         </div>
         
         <div class="accessory-card">
-          <img src="assets/obd.png" alt="OBD">
+          <img src="accessoriesExample.PNG" alt="OBD">
           <div class="acc-details">
             <span>OBD скенер</span>
             <span class="price">+20 лв</span>
           </div>
           <button class="add-btn" 
-                  (click)="addAccessory('OBD Скенер', 20, 'assets/obd.png', 'acc-obd-01')">
+                  (click)="addAccessory('OBD Скенер', 20, 'accessoriesExample.PNG', 'acc-obd-01')">
             <i class="fa-solid fa-plus"></i>
           </button>
         </div>
@@ -54,7 +64,7 @@
     </div>
 
     <div class="modal-footer">
-      <button class="btn-black" routerLink="/checkout">Продължи към плащане</button>
+      <button class="btn-black" (click)="proceedToCheckout()">Продължи към плащане</button>
     </div>
 
   </div>

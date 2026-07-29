@@ -1,50 +1,73 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { CartService } from '../../services/cart.service'; // Увери се в пътя!
+import { Router } from '@angular/router'; 
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; 
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-basket-plus',
   standalone: true,
-  imports: [RouterLink],
+  imports: [CommonModule, FormsModule],
   templateUrl: './basket-plus.component.html',
   styleUrl: './basket-plus.component.css'
 })
 export class BasketPlusComponent {
-@Output() closeModal = new EventEmitter<void>();
-  constructor(private cartService: CartService) {}
+  @Output() closeModal = new EventEmitter<void>();
+
+  wantsInstallation: boolean = false;
+  installDate: string = '';
+  installTime: string = '';
+
+  constructor(private cartService: CartService, private router: Router) {}
 
   toggleInstallation(event: any) {
-    const isChecked = event.target.checked;
-    const serviceId = 'service-installation';
+    this.wantsInstallation = event.target.checked;
+    
 
-    if (isChecked) {
-   
-      this.cartService.addToCart({
-        _id: serviceId,
-        title: 'Професионален монтаж на адрес',
-        price: 70,
-        img: 'assets/service-icon.png',
-        specs: 'Услуга'
-      }, null, 1); 
-    } else {
-      
-      this.cartService.removeItem(serviceId);
+    if (!this.wantsInstallation) {
+      this.cartService.removeItem('service-installation');
+      this.installDate = '';
+      this.installTime = '';
     }
   }
 
   addAccessory(title: string, price: number, img: string, id: string) {
-   
     this.cartService.addToCart({
       _id: id,
       title: title,
-      price: price,
       img: img,
+      price: price,
       specs: 'Аксесоар'
     }, null, 1);
     
-    alert(`${title} е добавен!`);
+    alert(`${title} беше добавен успешно!`);
   }
+
   close() {
     this.closeModal.emit();
+  }
+
+  proceedToCheckout() {
+    if (this.wantsInstallation) {
+      if (!this.installDate || !this.installTime) {
+        alert('Моля, изберете ден и час за монтажа!');
+        return; 
+      }
+
+      this.cartService.addToCart({
+        _id: 'service-installation',
+        title: 'Професионален монтаж на адрес',
+        img: 'assets/logo.png',
+        price: 70
+      }, {
+        id: 1, 
+        price: 70, 
+        specs: `Избран час: ${this.installDate} / ${this.installTime} ч.` 
+      }, 1);
+    }
+
+   
+    this.close();
+    this.router.navigate(['/checkout']);
   }
 }

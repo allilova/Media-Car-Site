@@ -156,7 +156,17 @@ export class AdminOrdersComponent implements OnInit {
       }));
       fileName = 'Reservations.xlsx';
     } else {
-      dataToExport = this.filteredOrders;
+      dataToExport = this.filteredOrders.map(o => ({
+        'Номер Поръчка': o._id.slice(-6),
+        'Дата': new Date(o.createdAt).toLocaleDateString(),
+        'Клиент': o.customer.name,
+        'Телефон': o.customer.phone,
+        'Адрес': o.customer.address,
+        'Артикули': o.items.map((i: any) => `${i.title} (x${i.quantity}) ${i.variant ? ' - ' + i.variant : ''}`).join('; '),
+        'Сума (лв)': o.totalPrice,
+        'Начин на плащане': o.paymentMethod || 'Наложен платеж',
+        'Статус': o.status
+      }));
       fileName = 'Orders.xlsx';
     }
 
