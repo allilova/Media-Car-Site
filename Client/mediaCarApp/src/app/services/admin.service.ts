@@ -22,6 +22,10 @@ private apiUrl = '/api/admin';
     }
   }
 
+  isLoggedInAsAdmin(): boolean {
+    return this.isAdminSubject.value;
+  }
+
   getToken(): string | null {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser).token : null;
