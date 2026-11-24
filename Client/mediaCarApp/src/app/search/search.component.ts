@@ -1,38 +1,60 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
-import { RouterLink } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ProductService } from '../services/product.service';
+import { EurPipe } from '../shared/eur.pipe';
+import { CAR_BRANDS } from '../data/retrofy.data';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, EurPipe],
   templateUrl: './search.component.html',
   styleUrl: './search.component.css'
 })
-export class SearchComponent {
-  
-  searchQuery: string = ''; 
-  results: any[] = [];     
-  hasSearched: boolean = false;
+export class SearchComponent implements OnInit {
+  searchQuery = '';
+  results: any[] = [];
+  hasSearched = false;
+  loading = false;
+  brands = CAR_BRANDS.map(b => b.brand);
 
-  constructor(private productService: ProductService) {}
+  constructor(private productService: ProductService, private route: ActivatedRoute, private router: Router) {}
+
+  ngOnInit() {
+    this.route.queryParamMap.subscribe(params => {
+      const q = params.get('car') || params.get('q') || '';
+      if (q) {
+        this.searchQuery = q;
+        this.run();
+      }
+    });
+  }
 
   onSearch() {
-  
     if (!this.searchQuery.trim()) return;
+    this.router.navigate([], { queryParams: { q: this.searchQuery.trim() } });
+  }
 
+  pick(brand: string) {
+    this.router.navigate([], { queryParams: { q: brand } });
+  }
+
+  private run() {
     this.hasSearched = true;
-
-    this.productService.getProducts(undefined, this.searchQuery).subscribe({
+    this.loading = true;
+    this.productService.getProducts(undefined, this.searchQuery.trim()).subscribe({
       next: (data) => {
-        this.results = data.map(item => ({
-             ...item,
-             img: item.images && item.images.length > 0 ? item.images[0] : 'assets/placeholder.png'
-        }));
+        this.loading = false;
+        this.results = data
+          .filter(i => i.category !== 'portfolio')
+          .map(item => ({
+            ...item,
+            img: item.images?.[0] || 'mediaExample.PNG',
+            fromPrice: item.variants?.length ? Math.min(...item.variants.map((v: any) => v.price)) : item.price
+          }));
       },
-      error: (err) => console.error('Грешка при търсене:', err)
+      error: () => { this.loading = false; this.results = []; }
     });
   }
 }
