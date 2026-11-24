@@ -1,20 +1,21 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { EurPipe } from '../shared/eur.pipe';
 import { ProductService } from '../services/product.service';
 import { AdminService } from '../services/admin.service';
 
 @Component({
   selector: 'app-accessories-catalog',
-  imports: [CommonModule,RouterLink],
+  imports: [RouterLink, EurPipe],
   templateUrl: './accessories-catalog.component.html',
   styleUrl: './accessories-catalog.component.css'
 })
 export class AccessoriesCatalogComponent implements OnInit {
 isAdmin = false;
   products: any[] = [];
+  loaded = false;
   currentPage = 1;
-  itemsPerPage = 6;
+  itemsPerPage = 8;
 
   constructor(private productService: ProductService, private adminService: AdminService) {}
 
@@ -28,13 +29,15 @@ isAdmin = false;
   loadProducts() {
     this.productService.getProducts('accessories').subscribe({
       next: (data) => {
+        this.loaded = true;
         this.products = data.map(item => ({
           ...item,
           id: item._id,
-          img: item.images && item.images.length > 0 ? item.images[0] : 'assets/placeholder.png'
+          img: item.images?.[0] || 'mediaExample.PNG',
+          fromPrice: item.variants?.length ? Math.min(...item.variants.map((v: any) => v.price)) : item.price
         }));
       },
-      error: (err) => console.error('Грешка:', err)
+      error: (err) => { this.loaded = true; console.error('Грешка:', err); }
     });
   }
 
