@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { EurPipe } from '../shared/eur.pipe';
 import { ProductService } from '../services/product.service';
 import { AdminService } from '../services/admin.service'; 
 
 @Component({
   selector: 'app-services-catalog',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, EurPipe],
   templateUrl: './services-catalog.component.html',
   styleUrl: './services-catalog.component.css'
 })
@@ -33,7 +34,6 @@ export class ServicesCatalogComponent implements OnInit {
     this.productService.getProducts('services').subscribe({
       next: (data) => {
         this.services = data;
-        console.log('Заредени услуги:', this.services);
       },
       error: (err) => {
         console.error('Грешка при зареждане на услугите:', err);
