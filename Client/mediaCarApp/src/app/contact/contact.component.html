@@ -1,32 +1,29 @@
-<div class="contact-card">
-    
-    <div class="logo-box">
-        <img src="logo.png" alt="Logo"> </div>
+<div class="grid">
+  <div class="info">
+    <h2>Попитайте за вашата кола</h2>
+    <p class="muted">Напишете марка, модел и година – ще ви отговорим с точна цена. Най-бързо е по телефона или Viber.</p>
+    <ul class="ways">
+      @for (c of quick; track c.label) {
+        <li><a [href]="c.url" target="_blank" rel="noopener"><i [class]="c.icon" aria-hidden="true"></i><span>{{ c.label }}</span></a></li>
+      }
+    </ul>
+    <dl>
+      <div><dt>Телефон</dt><dd><a [href]="'tel:+' + brand.phoneIntl">{{ brand.phone }}</a></dd></div>
+      <div><dt>Работно време</dt><dd>{{ brand.hours }}</dd></div>
+      <div><dt>Къде</dt><dd>На ваш адрес в {{ brand.city }} и до 20 км</dd></div>
+    </dl>
+  </div>
 
-    <div class="info-box">
-        <h2>Свържете се с нас</h2>
-        <div class="phone">
-            <i class="fa-solid fa-phone"></i> 0899064299        </div>
-
-        <form (ngSubmit)="onSubmit()" #contactForm="ngForm">
-            
-            <label>Име</label>
-            <input type="text" name="name" [(ngModel)]="formData.name" required placeholder="Вашето име...">
-
-            <label>Имейл</label>
-            <input type="email" name="email" [(ngModel)]="formData.email" required placeholder="Вашият имейл...">
-
-            <label>Тема</label>
-            <input type="text" name="subject" [(ngModel)]="formData.subject" placeholder="Относно...">
-
-            <label>Съобщение</label>
-            <textarea name="message" [(ngModel)]="formData.message" rows="4" required placeholder="Напишете вашето запитване..."></textarea>
-
-            <div class="button-container">
-                <button type="submit" [disabled]="isSending">
-                    {{ isSending ? 'ИЗПРАЩАНЕ...' : 'ИЗПРАТИ' }}
-                </button>
-            </div>
-        </form>
+  <form class="form" (ngSubmit)="onSubmit()" #contactForm="ngForm">
+    <div class="row">
+      <div class="field"><label for="c-name">Име</label><input id="c-name" name="name" [(ngModel)]="formData.name" required autocomplete="name"></div>
+      <div class="field"><label for="c-phone">Телефон</label><input id="c-phone" name="phone" type="tel" [(ngModel)]="formData.phone" autocomplete="tel"></div>
     </div>
+    <div class="field"><label for="c-email">Имейл</label><input id="c-email" name="email" type="email" [(ngModel)]="formData.email" autocomplete="email"></div>
+    <div class="field"><label for="c-subject">Кола</label><input id="c-subject" name="subject" [(ngModel)]="formData.subject" placeholder="напр. VW Golf 6, 2011"></div>
+    <div class="field"><label for="c-msg">Съобщение</label><textarea id="c-msg" name="message" [(ngModel)]="formData.message" required placeholder="Какво искате да монтираме?"></textarea></div>
+    <p class="field-hint">Оставете телефон или имейл, за да ви отговорим.</p>
+    <button type="submit" class="btn btn-dark btn-block" [disabled]="isSending">{{ isSending ? 'Изпращане…' : 'Изпрати запитването' }}</button>
+    @if (status) { <p class="status" [class.err]="isError" role="status">{{ status }}</p> }
+  </form>
 </div>
