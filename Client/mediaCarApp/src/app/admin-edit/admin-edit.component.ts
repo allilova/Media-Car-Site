@@ -27,6 +27,8 @@ productId: string = '';
 
   newImages: string[] = [];
 
+  compatibilityText = '';
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -46,6 +48,8 @@ productId: string = '';
         this.product = data;
         if (!this.product.specs) this.product.specs = {};
         if (!this.product.variants) this.product.variants = [];
+        if (!this.product.images) this.product.images = [];
+        this.compatibilityText = (this.product.compatibility || []).join(', ');
       },
       error: (err) => console.error(err)
     });
@@ -76,7 +80,7 @@ productId: string = '';
 
  
   addVariant() {
-    this.product.variants.push({ ram: 4, rom: 64, price: 0, cpu: '4-ядрен' });
+    this.product.variants.push({ ram: 4, rom: 64, price: 0, cpu: '8-ядрен' });
   }
 
   removeVariant(index: number) {
@@ -89,13 +93,14 @@ productId: string = '';
 
     const updatedProduct = {
       ...this.product,
-      images: combinedImages
+      images: combinedImages,
+      compatibility: this.compatibilityText.split(',').map((s: string) => s.trim()).filter(Boolean)
     };
 
     this.productService.updateProduct(this.productId, updatedProduct).subscribe({
       next: () => {
         alert('Промените са запазени!');
-        this.router.navigate(['/']); 
+        this.router.navigate(['/home']);
       },
       error: (err) => {
         console.error(err);
