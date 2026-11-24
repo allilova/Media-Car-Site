@@ -1,15 +1,118 @@
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Inter", sans-serif;
-    
-}
-html {
-    scroll-behavior: smooth;
+/* Retrofy – дизайн токени
+   Подсветката на арматурните табла от 2005–2016 (кехлибарено оранжево)
+   срещу тъмното стъкло на новия екран. */
+:root {
+  --paper: #F3F5F7;      /* фон */
+  --surface: #FFFFFF;
+  --ink: #16202E;        /* основен текст */
+  --steel: #5B6878;      /* второстепенен текст */
+  --line: #D8DEE5;
+  --glass: #0E1A2B;      /* екранът на медията */
+  --glass-2: #1B2B42;
+  --amber: #F08C1A;      /* подсветка на таблото */
+  --amber-soft: #FDEBD3;
+  --amber-ink: #A65600;  /* кехлибарен текст върху светъл фон */
+  --ok: #1F8A5B;
+  --danger: #C2362B;
+
+  --f-display: "Unbounded", "Onest", system-ui, sans-serif;
+  --f-body: "Onest", system-ui, sans-serif;
+
+  --r-screen: 22px;
+  --r-panel: 14px;
+  --r-control: 10px;
+
+  --wrap: 1180px;
+  --pad: clamp(20px, 4vw, 40px);
 }
 
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-a {
-    cursor: pointer; 
+html { scroll-behavior: smooth; scroll-padding-top: 84px; }
+
+body {
+  font-family: var(--f-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; cursor: pointer; }
+button { font: inherit; cursor: pointer; }
+input, select, textarea { font: inherit; color: inherit; }
+
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; }
+h1 { font-size: clamp(32px, 5vw, 54px); }
+h2 { font-size: clamp(24px, 3.2vw, 36px); }
+h3 { font-size: 19px; }
+
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; border-radius: 4px; }
+
+.wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--pad); }
+.section { padding: clamp(56px, 8vw, 104px) 0; }
+.section-head { max-width: 640px; margin-bottom: 40px; }
+.section-head p { color: var(--steel); margin-top: 12px; }
+
+/* Бутони */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 48px; padding: 0 22px;
+  border: 1.5px solid transparent; border-radius: var(--r-control);
+  font-weight: 600; font-size: 16px; text-decoration: none;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.btn-primary { background: var(--amber); color: var(--ink); }
+.btn-primary:hover { background: #E07C08; }
+.btn-dark { background: var(--ink); color: #fff; }
+.btn-dark:hover { background: var(--glass-2); }
+.btn-ghost { background: transparent; border-color: var(--line); color: var(--ink); }
+.btn-ghost:hover { border-color: var(--ink); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-block { width: 100%; }
+
+/* Полета */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 14px; font-weight: 600; }
+.field input, .field select, .field textarea {
+  width: 100%; min-height: 46px; padding: 10px 14px;
+  background: var(--surface); border: 1.5px solid var(--line); border-radius: var(--r-control);
+}
+.field textarea { min-height: 110px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--amber); }
+.field-hint { font-size: 13px; color: var(--steel); }
+
+.price { font-family: var(--f-display); font-weight: 600; }
+.muted { color: var(--steel); }
+
+/* Обща карта за продукти */
+.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+.product-card {
+  position: relative; display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-panel); overflow: hidden;
+  text-decoration: none;
+}
+.product-card .media { aspect-ratio: 4 / 3; background: #E9EDF1; display: grid; place-items: center; }
+.product-card .media img { width: 100%; height: 100%; object-fit: contain; padding: 14px; }
+.product-card .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.product-card h3 { font-family: var(--f-body); font-size: 17px; font-weight: 600; line-height: 1.35; }
+.product-card .price { margin-top: auto; padding-top: 8px; font-size: 20px; }
+.product-card:hover { border-color: var(--ink); }
+
+.admin-actions { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; z-index: 2; }
+.icon-btn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line);
+  background: var(--surface); display: grid; place-items: center;
+}
+.icon-btn.danger { color: var(--danger); }
+
+.pager { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 28px; color: var(--steel); }
+
+.empty { padding: 40px; text-align: center; border: 1.5px dashed var(--line); border-radius: var(--r-panel); color: var(--steel); }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
 }
