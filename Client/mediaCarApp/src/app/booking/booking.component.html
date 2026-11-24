@@ -1,75 +1,102 @@
-<div class="booking-container">
-  
-  <h2 class="section-title">Запази час за монтаж</h2>
+<div class="wrap page">
+  @if (confirmed) {
+    <div class="done">
+      <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+      <h1>Часът е запазен</h1>
+      <p><strong class="cap">{{ dateLabel }}</strong>, {{ selectedTime }} ч., на {{ form.address }}.</p>
+      <p class="muted">Ще ви се обадим ден преди това, за да потвърдим. Ако нещо се промени, звъннете на {{ phone }}.</p>
+      <a class="btn btn-dark" routerLink="/home">Към началото</a>
+    </div>
+  } @else {
+  <h1>Запазете час за монтаж</h1>
+  <p class="intro muted">Идваме на ваш адрес в София. Делнични дни вечер, събота и неделя през деня.</p>
 
-  <div class="booking-grid">
-    
-    <div class="calendar-section">
-      <div class="calendar-header">
-        <button (click)="changeMonth(-1)"><i class="fa-solid fa-chevron-left"></i></button>
-        <h3>{{ monthNames[currentMonth] }} {{ currentYear }}</h3>
-        <button (click)="changeMonth(1)"><i class="fa-solid fa-chevron-right"></i></button>
+  <div class="layout">
+    <div class="when">
+      <div class="cal">
+        <div class="cal-head">
+          <button class="nav" (click)="changeMonth(-1)" [disabled]="!canGoBack" aria-label="Предишен месец"><i class="fa-solid fa-chevron-left"></i></button>
+          <h2>{{ monthNames[month] }} {{ year }}</h2>
+          <button class="nav" (click)="changeMonth(1)" aria-label="Следващ месец"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+        <div class="dow" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span></div>
+        <div class="days">
+          @for (e of offset; track $index) { <span></span> }
+          @for (d of days; track d.iso) {
+            <button class="day" [class.sel]="selectedDate === d.iso" [class.we]="d.weekend" [class.today]="d.iso === today"
+                    [disabled]="d.past" (click)="selectDate(d)" [attr.aria-pressed]="selectedDate === d.iso">{{ d.n }}</button>
+          }
+        </div>
       </div>
 
-      <div class="calendar-days-header">
-        <span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Нд</span>
-      </div>
-
-      <div class="calendar-body">
-        @for (empty of emptyDays; track $index) {
-          <div class="empty-cell"></div>
-        }
-        
-        @for (day of daysInMonth; track day) {
-          <div 
-            class="day-cell" 
-            [class.selected]="selectedDate === day"
-            (click)="selectDate(day)">
-            {{ day }}
+      <div class="times">
+        <h2>Час</h2>
+        @if (!selectedDate) {
+          <p class="muted">Изберете ден от календара.</p>
+        } @else {
+          <p class="muted cap">{{ dateLabel }}</p>
+          <div class="slots">
+            @for (t of slots; track t) {
+              <button [class.on]="selectedTime === t" [disabled]="takenSlots.includes(t) || isPastSlot(t)" (click)="selectedTime = t">{{ t }}</button>
+            }
           </div>
+          @if (takenSlots.length) { <p class="field-hint">Задрасканите часове са заети.</p> }
         }
       </div>
     </div>
 
-    <div class="time-slots-section" [class.disabled]="!selectedDate">
-      <h3>Свободни часове</h3>
-      <p *ngIf="!selectedDate" class="hint-text">Моля, първо изберете дата от календара.</p>
-      
-      <div class="slots-grid">
-        @for (time of availableSlots; track time) {
-          <button 
-            class="slot-btn" 
-            [class.active]="selectedTime === time"
-            [disabled]="!selectedDate"
-            (click)="selectTime(time)">
-            {{ time }}
-          </button>
-        }
+    <form class="details" (ngSubmit)="submit()">
+      <h2>Кола и контакт</h2>
+      <div class="field">
+        <label for="bk-pkg">Какво монтираме</label>
+        <select id="bk-pkg" name="package" [(ngModel)]="form.package">
+          <option value="">Още не знам – искам консултация</option>
+          @for (p of packageOptions; track p) { <option [value]="p">{{ p }}</option> }
+        </select>
       </div>
-    </div>
+      <div class="row3">
+        <div class="field">
+          <label for="bk-brand">Марка</label>
+          <select id="bk-brand" name="brand" [(ngModel)]="form.brand" (ngModelChange)="form.model = ''">
+            <option value="">—</option>
+            @for (b of brands; track b.brand) { <option [value]="b.brand">{{ b.brand }}</option> }
+            <option value="Друга">Друга</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="bk-model">Модел</label>
+          @if (models.length) {
+            <select id="bk-model" name="model" [(ngModel)]="form.model">
+              <option value="">—</option>
+              @for (m of models; track m) { <option [value]="m">{{ m }}</option> }
+              <option value="Друг модел">Друг модел</option>
+            </select>
+          } @else {
+            <input id="bk-model" name="model" [(ngModel)]="form.model" placeholder="Модел">
+          }
+        </div>
+        <div class="field">
+          <label for="bk-year">Година</label>
+          <select id="bk-year" name="year" [(ngModel)]="form.year">
+            <option value="">—</option>
+            @for (y of years; track y) { <option [value]="y">{{ y }}</option> }
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="bk-name">Име</label><input id="bk-name" name="name" [(ngModel)]="form.name" autocomplete="name"></div>
+        <div class="field"><label for="bk-phone">Телефон</label><input id="bk-phone" name="phone" type="tel" [(ngModel)]="form.phone" autocomplete="tel"></div>
+      </div>
+      <div class="field"><label for="bk-email">Имейл (по желание)</label><input id="bk-email" name="email" type="email" [(ngModel)]="form.email" autocomplete="email"></div>
+      <div class="field"><label for="bk-addr">Адрес за монтажа</label><input id="bk-addr" name="address" [(ngModel)]="form.address" placeholder="Квартал, улица, номер" autocomplete="street-address"></div>
+      <div class="field"><label for="bk-note">Бележка</label><textarea id="bk-note" name="note" [(ngModel)]="form.note" placeholder="напр. имам фабрично Bose озвучаване"></textarea></div>
 
+      @if (selectedDate && selectedTime) {
+        <p class="summary">Монтаж: <strong class="cap">{{ dateLabel }}</strong>, {{ selectedTime }} ч.</p>
+      }
+      @if (error) { <p class="err" role="alert">{{ error }}</p> }
+      <button class="btn btn-primary btn-block" type="submit" [disabled]="sending">{{ sending ? 'Запазване…' : 'Запази часа' }}</button>
+    </form>
   </div>
-
-  @if (selectedDate && selectedTime) {
-    <div class="booking-form fade-in">
-      <h3>Вашите данни</h3>
-      <div class="form-row">
-        <input type="text" [(ngModel)]="userData.name" name="name" placeholder="Име и Фамилия" required>
-        <input type="text" [(ngModel)]="userData.phone" name="phone" placeholder="Телефон" required>
-      </div>
-      <div class="form-row">
-        <input type="email" [(ngModel)]="userData.email" name="email" placeholder="Имейл адрес">
-        <input type="text" [(ngModel)]="userData.address" name="address" placeholder="Адрес за монтаж (Град, Улица, №)" required>
-      </div>
-
-      <div class="summary">
-        <p>
-            Ще запазите час за: 
-            <strong>{{ selectedDate }} {{ monthNames[currentMonth] }} в {{ selectedTime }}ч.</strong>
-        </p>
-      </div>
-
-      <button class="submit-btn" (click)="submitBooking()">ПОТВЪРДИ РЕЗЕРВАЦИЯТА</button>
-    </div>
   }
 </div>
