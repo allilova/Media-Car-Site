@@ -23,7 +23,7 @@
     <div class="stat-card dark">
       <div class="icon"><i class="fa-solid fa-wallet"></i></div>
       <div class="info">
-        <h3>{{ revenue }} лв.</h3>
+        <h3>{{ revenue | eur }}</h3>
         <p>Приблизителен Оборот</p>
       </div>
     </div>
@@ -69,7 +69,7 @@
         </div>
       </td>
 
-      <td><strong>{{ booking.user.name }}</strong><br><small>{{ booking.user.address }}</small></td>
+      <td><strong>{{ booking.user.name }}</strong><br><small>{{ booking.user.address }}</small>@if (booking.car?.brand || booking.package) {<br><small class="car-line">{{ booking.car?.brand }} {{ booking.car?.model }} {{ booking.car?.year }}@if (booking.package) { – {{ booking.package }}}</small>}</td>
 
       <td>
          <div class="contact-col">
@@ -148,7 +148,7 @@
               </td>
 
               <td style="font-weight: bold; width: 150px;">
-                <div style="font-size: 16px;">{{ order.totalPrice }} лв.</div>
+                <div style="font-size: 16px;">{{ order.totalPrice | eur }}</div>
                 
                 <div style="font-size: 12px; font-weight: normal; margin-top: 8px; color: #0056b3; line-height: 1.3;">
                     <i class="fa-solid fa-credit-card"></i> 
@@ -156,7 +156,7 @@
                 </div>
               </td>
 
-              <td style="font-weight: bold;">{{ order.totalPrice }} лв.</td>
+              <td style="font-weight: bold;">{{ order.totalPrice | eur }}</td>
 
               <td>
                 <div class="status-actions">
