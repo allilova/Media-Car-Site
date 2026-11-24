@@ -1,28 +1,35 @@
-<nav>
-    <div class="menu-icon" (click)="toggleMenu()">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
+<header class="topbar">
+  <div class="wrap bar">
+    <a routerLink="/home" class="brand" aria-label="Retrofy – начало" (click)="isMenuOpen = false">
+      <app-logo></app-logo>
+    </a>
+
+    <nav id="main-nav" class="links" [class.open]="isMenuOpen" aria-label="Основно меню">
+      @for (link of links; track link.id) {
+        @if (!(isAdmin && link.id === 'contacts')) {
+          <a (click)="scrollToSection(link.id)">{{ link.label }}</a>
+        }
+      }
+      @if (isAdmin) {
+        <a (click)="scrollToSection('admin-orders')">Поръчки и часове</a>
+        <a (click)="logout()">Изход</a>
+      }
+      <a class="phone-mobile" [href]="'tel:+' + brand.phoneIntl"><i class="fa-solid fa-phone"></i> {{ brand.phone }}</a>
+    </nav>
+
+    <div class="actions">
+      <a class="phone" [href]="'tel:+' + brand.phoneIntl">{{ brand.phone }}</a>
+      <a routerLink="/search" class="icon" aria-label="Търсене"><i class="fa-solid fa-magnifying-glass"></i></a>
+      @if (!isAdmin) {
+        <a routerLink="/basket-shop" class="icon cart" aria-label="Количка">
+          <i class="fa-solid fa-cart-shopping"></i>
+          @if (cartCount > 0) { <span class="badge">{{ cartCount }}</span> }
+        </a>
+      }
+      <a routerLink="/booking" class="btn btn-primary cta">Запази час</a>
+      <button class="menu-btn" (click)="toggleMenu()" [attr.aria-expanded]="isMenuOpen" aria-controls="main-nav" aria-label="Меню">
+        <i class="fa-solid" [class.fa-bars]="!isMenuOpen" [class.fa-xmark]="isMenuOpen"></i>
+      </button>
     </div>
-
-    <ul class="nav-links" [class.active]="isMenuOpen">
-        
-        <li><a (click)="scrollToSection('hero-banner')">Начало</a></li>
-        <li><a (click)="scrollToSection('media-catalog')">Мултимедии</a></li>
-        <li><a (click)="scrollToSection('accessories-catalog')">Аксесоари</a></li>
-        <li><a (click)="scrollToSection('services')">Услуги</a></li>
-
-        @if (!isAdmin) {
-            <li><a (click)="scrollToSection('contacts')">Контакти</a></li>
-            <li><a routerLink="/basket-shop"><i class="fa-solid fa-cart-shopping"></i></a></li>
-        }
-
-        @if (isAdmin) {
-            <li><a (click)="scrollToSection('admin-orders')">Поръчки</a></li>
-            <li><a (click)="logout()" style="cursor: pointer;">Изход <i class="fa-solid fa-right-from-bracket"></i></a></li>
-        }
-
-        <li><a routerLink="/search"><i class="fa-solid fa-magnifying-glass"></i></a></li>
-        
-    </ul>
-</nav>
+  </div>
+</header>
