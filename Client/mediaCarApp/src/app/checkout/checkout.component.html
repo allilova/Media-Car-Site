@@ -1,180 +1,69 @@
-<div class="checkout-container">
-  <h1 class="page-title">Завършване на поръчката</h1>
-
-  <div class="checkout-layout">
-    
-    <div class="user-details-column">
-      
-      <div class="form-section">
-        <h3>1. Данни за контакт</h3>
-        <div class="input-group">
-          <input type="text" 
-                 placeholder="Име и Фамилия *" 
-                 class="full-width"
-                 [(ngModel)]="formData.name">
+<div class="wrap page">
+  @if (done) {
+    <div class="done">
+      <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+      <h1>Поръчката е приета</h1>
+      <p>Ще ви се обадим до няколко часа, за да потвърдим{{ installLabel ? ' часа за монтаж' : ' доставката' }}.@if (formData.email) { Изпратихме потвърждение на {{ formData.email }}.}</p>
+      <a class="btn btn-dark" routerLink="/home">Към началото</a>
+    </div>
+  } @else {
+  <h1>Поръчка</h1>
+  <div class="layout">
+    <form class="steps" (ngSubmit)="placeOrder()">
+      <fieldset>
+        <legend>Вашите данни</legend>
+        <div class="field"><label for="co-name">Име и фамилия</label><input id="co-name" name="name" [(ngModel)]="formData.name" autocomplete="name" required></div>
+        <div class="row">
+          <div class="field"><label for="co-phone">Телефон</label><input id="co-phone" name="phone" type="tel" [(ngModel)]="formData.phone" autocomplete="tel" required></div>
+          <div class="field"><label for="co-email">Имейл (за потвърждение)</label><input id="co-email" name="email" type="email" [(ngModel)]="formData.email" autocomplete="email"></div>
         </div>
-        <div class="input-row">
-          <input type="text" 
-                 placeholder="Телефон за връзка *"
-                 [(ngModel)]="formData.phone">
-          
-          <input type="email" 
-                 placeholder="Имейл адрес (по желание)"
-                 [(ngModel)]="formData.email">
-        </div>
-      </div>
+      </fieldset>
 
-      <div class="form-section">
-        <h3>2. Начин на доставка</h3>
-        
-        <div class="delivery-options">
-          <label class="radio-card" [class.selected-card]="formData.deliveryType === 'office'">
-            <input type="radio" 
-                   name="delivery" 
-                   value="office" 
-                   [(ngModel)]="formData.deliveryType">
-            <div class="radio-content">
-              <span class="radio-title">До офис на Еконт/Спиди</span>
-              <span class="radio-desc">Най-евтина доставка</span>
-            </div>
-          </label>
-
-          <label class="radio-card" [class.selected-card]="formData.deliveryType === 'address'">
-            <input type="radio" 
-                   name="delivery" 
-                   value="address" 
-                   [(ngModel)]="formData.deliveryType">
-            <div class="radio-content">
-              <span class="radio-title">До личен адрес</span>
-              <span class="radio-desc">Куриер ще дойде при вас</span>
-            </div>
-          </label>
-        </div>
-
-        <div class="input-group">
-          <textarea 
-            placeholder="Напишете името на офиса (напр. Еконт Център) или точния ви адрес..." 
-            [(ngModel)]="formData.address">
-          </textarea>
-        </div>
-      </div>
-
-      <div class="form-section">
-        <h3>3. Начин на плащане</h3>
-        
-        <div class="delivery-options" style="margin-bottom: 20px;">
-          <label class="radio-card" [class.selected-card]="formData.paymentMethod === 'cod'">
-            <input type="radio" 
-                   name="payment" 
-                   value="cod" 
-                   [(ngModel)]="formData.paymentMethod">
-            <div class="radio-content">
-              <span class="radio-title">Наложен платеж</span>
-              <span class="radio-desc">Плащане при доставка</span>
-            </div>
-          </label>
-
-          <label class="radio-card" [class.selected-card]="formData.paymentMethod === 'card'">
-            <input type="radio" 
-                   name="payment" 
-                   value="card" 
-                   [(ngModel)]="formData.paymentMethod">
-            <div class="radio-content">
-              <span class="radio-title">Банкова карта</span>
-              <span class="radio-desc">Сигурно плащане онлайн</span>
-            </div>
-          </label>
-        </div>
-
-        @if (formData.paymentMethod === 'card') {
-          <div class="card-details-form">
-            <h4 style="margin-bottom: 15px; font-size: 15px;">Въведете данни за картата:</h4>
-            
-            <div class="input-group">
-              <input type="text" 
-                     placeholder="Имена на картодържател" 
-                     class="full-width"
-                     [(ngModel)]="formData.cardName">
-            </div>
-            
-            <div class="input-group">
-              <input type="text" 
-                     placeholder="Номер на карта (16 цифри)" 
-                     class="full-width"
-                     maxlength="19"
-                     [(ngModel)]="formData.cardNumber">
-            </div>
-            
-            <div class="input-row">
-              <input type="text" 
-                     placeholder="ММ/ГГ" 
-                     maxlength="5"
-                     [(ngModel)]="formData.cardExpiry">
-              
-              <input type="password" 
-                     placeholder="CVV (3 цифри)" 
-                     maxlength="3"
-                     [(ngModel)]="formData.cardCvv">
-            </div>
-
-            <p class="security-note">
-              <i class="fa-solid fa-lock"></i> Вашите данни са защитени (Демонстрационна цел)
-            </p>
+      @if (installation) {
+        <fieldset>
+          <legend>Монтаж</legend>
+          <p class="install-note"><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> {{ installLabel }} Носим медията с нас и плащате на място след монтажа.</p>
+          <div class="field"><label for="co-addr">Адрес за монтажа в София</label><textarea id="co-addr" name="address" [(ngModel)]="formData.address" placeholder="Улица, номер, квартал – и къде паркирате колата" required></textarea></div>
+        </fieldset>
+      } @else {
+        <fieldset>
+          <legend>Доставка</legend>
+          <div class="choices">
+            <label class="choice" [class.on]="formData.deliveryType === 'office'">
+              <input type="radio" name="delivery" value="office" [(ngModel)]="formData.deliveryType">
+              <span><strong>До офис на Еконт или Спиди</strong><small>По-евтино</small></span>
+            </label>
+            <label class="choice" [class.on]="formData.deliveryType === 'address'">
+              <input type="radio" name="delivery" value="address" [(ngModel)]="formData.deliveryType">
+              <span><strong>До адрес</strong><small>Куриерът идва при вас</small></span>
+            </label>
           </div>
+          <div class="field">
+            <label for="co-addr2">{{ formData.deliveryType === 'office' ? 'Град и офис' : 'Град и адрес' }}</label>
+            <textarea id="co-addr2" name="address" [(ngModel)]="formData.address" [placeholder]="formData.deliveryType === 'office' ? 'напр. София, Еконт Младост 1' : 'Град, улица, номер'" required></textarea>
+          </div>
+          <p class="field-hint">Плащане с наложен платеж при получаване.</p>
+        </fieldset>
+      }
+
+      @if (error) { <p class="err" role="alert">{{ error }}</p> }
+      <button class="btn btn-primary btn-block big" type="submit" [disabled]="sending">{{ sending ? 'Изпращане…' : 'Потвърди поръчката' }}</button>
+      <p class="terms">С поръчката приемате <a routerLink="/usloviya">общите условия</a>.</p>
+    </form>
+
+    <aside class="summary">
+      <h2>Вашата поръчка</h2>
+      <ul>
+        @for (item of cartItems; track item.productId + (item.variantId ?? '')) {
+          <li>
+            <span class="t">{{ item.title }} <small>×{{ item.quantity }}</small></span>
+            <span>{{ item.price * item.quantity | eur }}</span>
+          </li>
         }
-
-      </div>
-    </div>
-
-    <div class="order-summary-column">
-      <div class="summary-card">
-        <h3>Вашата поръчка</h3>
-        
-        <div class="cart-items-list">
-          
-          @if (cartItems.length === 0) {
-            <p>Количката е празна.</p>
-          }
-
-          @for (item of cartItems; track item.id) {
-            <div class="summary-item">
-              <div class="item-info">
-                <span class="item-name">{{ item.title }}</span>
-                <span class="item-qty">x{{ item.quantity }}</span>
-                @if(item.specs) {
-                    <div style="font-size: 12px; color: #777;">{{ item.specs }}</div>
-                }
-              </div>
-              <span class="item-price">{{ item.price * item.quantity }} лв.</span>
-            </div>
-          }
-
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="totals">
-          <div class="total-row">
-            <span>Междинна сума:</span>
-            <span>{{ totalPrice }} лв.</span>
-          </div>
-          <div class="total-row delivery-cost">
-            <span>Доставка:</span>
-            <span>Изчислява се от куриер</span>
-          </div>
-          <div class="total-row final-total">
-            <span>ОБЩО:</span>
-            <span>{{ totalPrice }} лв.</span>
-          </div>
-        </div>
-
-        <button class="place-order-btn" (click)="placeOrder()">
-            ПОРЪЧАЙ
-        </button>
-        
-        <p class="terms-text">С натискане на бутона приемате общите условия.</p>
-      </div>
-    </div>
-
+      </ul>
+      <div class="row-sum"><span>Доставка</span><span class="muted">{{ installation ? 'включена' : 'по тарифа на куриера' }}</span></div>
+      <div class="row-sum total"><span>Общо</span><span class="price">{{ totalPrice | eur }}</span></div>
+    </aside>
   </div>
+  }
 </div>
