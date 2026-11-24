@@ -1,48 +1,42 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Трябва за формата
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { BRAND, QUICK_CONTACT } from '../data/retrofy.data';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.css']
 })
 export class ContactComponent {
-  
-  formData = {
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  };
-
-  isSending = false; // За да покажем "Изпращане..."
+  brand = BRAND;
+  quick = QUICK_CONTACT;
+  formData = { name: '', phone: '', email: '', subject: '', message: '' };
+  isSending = false;
+  status = '';
+  isError = false;
 
   constructor(private http: HttpClient) {}
 
   onSubmit() {
-    if (!this.formData.name || !this.formData.email || !this.formData.message) {
-      alert('Моля, попълнете всички полета!');
+    if (!this.formData.name || !this.formData.message || !(this.formData.email || this.formData.phone)) {
+      this.isError = true;
+      this.status = 'Попълнете име, съобщение и телефон или имейл.';
       return;
     }
-
     this.isSending = true;
-
-    // Пращаме към Backend-а
+    this.status = '';
     this.http.post('/api/contact', this.formData).subscribe({
-      next: (res) => {
-        alert('Съобщението е изпратено успешно! Ще се свържем с вас скоро.');
-        this.isSending = false;
-        // Изчистваме формата
-        this.formData = { name: '', email: '', subject: '', message: '' };
+      next: () => {
+        this.isSending = false; this.isError = false;
+        this.status = 'Запитването е изпратено. Ще ви отговорим днес.';
+        this.formData = { name: '', phone: '', email: '', subject: '', message: '' };
       },
       error: (err) => {
-        console.error(err);
-        alert('Възникна грешка. Моля, опитайте по-късно.');
-        this.isSending = false;
+        this.isSending = false; this.isError = true;
+        this.status = err.error?.error || 'Запитването не беше изпратено. Обадете ни се на телефона.';
       }
     });
   }
