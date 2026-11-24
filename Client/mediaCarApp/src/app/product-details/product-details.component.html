@@ -1,112 +1,91 @@
-<div class="product-page-container" *ngIf="product.title"> <div class="product-main-section">
-    <div class="product-gallery">
-      <div class="main-image">
-        <img [src]="selectedImage || 'assets/placeholder.png'" alt="Мултимедия">
-      </div>
-      <div class="thumbnail-list">
-        @for (img of product.images; track img) {
-          <img [src]="img" (click)="selectedImage = img" [class.active]="selectedImage === img" class="thumb">
-        }
-      </div>
+@if (notFound) {
+  <div class="wrap section"><p class="empty">Продуктът вече не е наличен. <a routerLink="/home">Вижте каталога</a>.</p></div>
+}
+
+@if (product) {
+<div class="wrap page">
+  <a routerLink="/home" class="back"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Към каталога</a>
+
+  <div class="main">
+    <div class="gallery">
+      <div class="stage"><img [src]="selectedImage" [alt]="product.title"></div>
+      @if (product.images?.length > 1) {
+        <div class="thumbs">
+          @for (img of product.images; track $index) {
+            <button (click)="selectedImage = img" [class.active]="selectedImage === img" [attr.aria-label]="'Снимка ' + ($index + 1)">
+              <img [src]="img" alt="">
+            </button>
+          }
+        </div>
+      }
     </div>
 
-    <div class="product-info">
-      <h1 class="product-title">{{ product.title }}</h1>
-      
-      <div class="product-price">
-        <span class="current-price">{{ selectedVariant.price }} лв.</span>
-        @if (selectedVariant.oldPrice) {
-          <span class="old-price">{{ selectedVariant.oldPrice }} лв.</span>
-        }
+    <div class="info">
+      <h1>{{ product.title }}</h1>
+      @if (product.compatibility?.length) {
+        <p class="fits"><i class="fa-solid fa-car-side" aria-hidden="true"></i> Подходяща за {{ product.compatibility.join(', ') }}</p>
+      }
+
+      <p class="price-line">
+        <span class="price">{{ price | eur }}</span>
+        @if (product.oldPrice && product.oldPrice > price) { <s>{{ product.oldPrice | eur }}</s> }
+      </p>
+
+      @if (product.variants?.length > 1) {
+        <div class="field">
+          <label for="variant">Памет и процесор</label>
+          <select id="variant" (change)="onVariantChange($event)">
+            @for (v of product.variants; track v._id) {
+              <option [value]="v._id" [selected]="v._id === selectedVariant?._id">{{ v.ram }}GB RAM / {{ v.rom }}GB – {{ v.cpu }} – {{ v.price | eur }}</option>
+            }
+          </select>
+        </div>
+      }
+
+      <div class="buy">
+        <button class="btn btn-primary" (click)="buyNow()">Купи</button>
+        <button class="btn btn-ghost" (click)="addToCart()">{{ added ? 'Добавено в количката' : 'Добави в количката' }}</button>
       </div>
 
-      <div class="variant-selector">
-        <label>Избери характеристики:</label>
-        <select (change)="onVariantChange($event)" class="variant-select">
-          @for (variant of product.variants; track variant._id) {
-            <option [value]="variant._id">
-              {{ variant.ram }}GB RAM / {{ variant.rom }}GB ROM - {{ variant.cpu }}
-            </option>
-          }
-        </select>
-      </div>
+      @if (isMultimedia) {
+        <div class="bundle">
+          <p><strong>Искате я монтирана?</strong> В пакет с рамка, CANBUS, камера и монтаж на адрес излиза по-изгодно.</p>
+          <a routerLink="/home" fragment="packages">Вижте пакетите от €270</a>
+        </div>
+      }
 
-      <div class="action-buttons">
-         <button class="add-to-cart-btn"(click)="addToCart()">Добави в количката</button>
-      </div>
-     <ul class="benefits-list">
-        <li>
-          <i class="fa-solid fa-truck-fast"></i>
-          <span><strong>Бърза доставка</strong> на следващия работен ден</span>
-        </li>
-        <li>
-          <i class="fa-solid fa-shield-halved"></i>
-          <span><strong>2 Години гаранция</strong> и 14 дни право на връщане</span>
-        </li>
-        <li>
-          <i class="fa-solid fa-screwdriver-wrench"></i>
-          <span><strong>Осигурен сервиз</strong> и поддръжка</span>
-        </li>
-        <li>
-          <i class="fa-solid fa-phone"></i>
-          <span><strong>Консултация</strong> по телефона за монтаж</span>
-        </li>
+      <ul class="benefits">
+        <li><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Доставка до 1–2 работни дни с Еконт или Спиди</li>
+        <li><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> До 24 месеца гаранция, 14 дни за връщане без монтаж</li>
+        <li><i class="fa-solid fa-screwdriver-wrench" aria-hidden="true"></i> Монтаж на адрес в София за около 2 часа</li>
       </ul>
     </div>
   </div>
 
-  <div class="product-tabs">
-     <div class="tabs-header">
-      <button 
-        [class.active]="activeTab === 'desc'" 
-        (click)="activeTab = 'desc'">Описание</button>
-      <button 
-        [class.active]="activeTab === 'specs'" 
-        (click)="activeTab = 'specs'">Спецификации</button>
-      <button 
-        [class.active]="activeTab === 'delivery'" 
-        (click)="activeTab = 'delivery'">Доставка</button>
-    </div>
+  <div class="tabs" role="tablist">
+    <button role="tab" [attr.aria-selected]="activeTab === 'desc'" [class.active]="activeTab === 'desc'" (click)="activeTab = 'desc'">Описание</button>
+    @if (isMultimedia) {
+      <button role="tab" [attr.aria-selected]="activeTab === 'specs'" [class.active]="activeTab === 'specs'" (click)="activeTab = 'specs'">Характеристики</button>
+    }
+    <button role="tab" [attr.aria-selected]="activeTab === 'delivery'" [class.active]="activeTab === 'delivery'" (click)="activeTab = 'delivery'">Доставка и монтаж</button>
+  </div>
 
-    <div class="tab-content">
-      
-      @if (activeTab === 'desc') {
-        <div class="tab-pane fade-in">
-          <h3>Описание</h3>
-          <p style="white-space: pre-line">{{ product.description }}</p>
-        </div>
-      }
-
-      @if (activeTab === 'specs') {
-        <div class="tab-pane fade-in">
-          <table class="specs-table">
-            <tr>
-              <td>Операционна система</td>
-              <td>{{ product.specs?.os }}</td>
-            </tr>
-            <tr>
-              <td>Дисплей</td>
-              <td>{{ product.specs?.screen }}</td>
-            </tr>
-            <tr>
-              <td>Резолюция</td>
-              <td>{{ product.specs?.resolution }}</td>
-            </tr>
-            <tr>
-              <td>Процесор</td>
-              <td>{{ selectedVariant.cpu }}</td> </tr>
-            <tr>
-              <td>Памет (RAM/ROM)</td>
-              <td>{{ selectedVariant.ram }}GB / {{ selectedVariant.rom }}GB</td>
-            </tr>
-            <tr>
-              <td>Изходна мощност</td>
-              <td>{{ product.specs?.power }}</td>
-            </tr>
-          </table>
-        </div>
-      }
-      
-      </div>
+  <div class="tab" role="tabpanel">
+    @if (activeTab === 'desc') {
+      <p class="desc">{{ product.description || 'Описанието предстои. Обадете ни се за подробности.' }}</p>
+    }
+    @if (activeTab === 'specs') {
+      <table>
+        <tr><th>Операционна система</th><td>{{ product.specs?.os }}</td></tr>
+        <tr><th>Дисплей</th><td>{{ product.specs?.screen }}, {{ product.specs?.resolution }}</td></tr>
+        <tr><th>Процесор</th><td>{{ selectedVariant?.cpu }}</td></tr>
+        <tr><th>Памет</th><td>{{ selectedVariant?.ram }}GB RAM / {{ selectedVariant?.rom }}GB</td></tr>
+        <tr><th>Изходна мощност</th><td>{{ product.specs?.power }}</td></tr>
+      </table>
+    }
+    @if (activeTab === 'delivery') {
+      <p class="desc">Пращаме с наложен платеж до офис или адрес. Ако изберете монтаж, идваме на ваш адрес в София в уговорения час, монтираме без рязане на кабели и ви показваме системата. Плащате на място.</p>
+    }
   </div>
 </div>
+}
