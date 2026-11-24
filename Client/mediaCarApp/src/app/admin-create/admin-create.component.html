@@ -2,7 +2,7 @@
   <div class="form-card">
     <div class="card-header">
       <h2>Добавяне на нов продукт / услуга</h2>
-      <a routerLink="/admin/dashboard" class="back-link">
+      <a routerLink="/home" class="back-link">
         <i class="fa-solid fa-xmark"></i> Отказ
       </a>
     </div>
@@ -23,14 +23,15 @@
             <option value="multimedia">Мултимедия</option>
             <option value="accessories">Аксесоар</option>
             <option value="services">Услуга</option>
+            <option value="portfolio">Портфолио (монтаж преди/след)</option>
           </select>
         </div>
         <div class="form-group">
-          <label>Базова Цена</label>
-          <input type="number" [(ngModel)]="product.price" name="price" required>
+          <label>Базова цена (€)</label>
+          <input type="number" [(ngModel)]="product.price" name="price" [required]="product.category !== 'portfolio'">
         </div>
         <div class="form-group">
-          <label>Стара Цена</label>
+          <label>Стара цена (€)</label>
           <input type="number" [(ngModel)]="product.oldPrice" name="oldPrice">
         </div>
       </div>
@@ -69,10 +70,10 @@
               </div>
               <div class="v-group" style="flex: 1.5;">
                   <label>Процесор</label>
-                  <input type="text" [(ngModel)]="variant.cpu" [name]="'cpu'+$index" placeholder="4-ядрен">
+                  <input type="text" [(ngModel)]="variant.cpu" [name]="'cpu'+$index" placeholder="8-ядрен">
               </div>
               <div class="v-group">
-                <label>Цена</label>
+                <label>Цена (€)</label>
                 <input type="number" [(ngModel)]="variant.price" [name]="'vprice'+$index">
               </div>
               <button type="button" class="delete-variant" (click)="removeVariant($index)">
@@ -104,6 +105,12 @@
             </div>
         </div>
       }
+
+      <div class="section-title">Подходящ за коли</div>
+      <div class="form-group">
+        <input type="text" [(ngModel)]="compatibilityText" name="compatibility" placeholder="напр. VW Golf VI, VW Golf VII, Škoda Octavia II">
+        <small style="color:#5B6878">Разделете със запетая. По тези думи клиентите намират продукта от „Коя е вашата кола?“ и търсенето.</small>
+      </div>
       <div class="section-title">Описание</div>
       <div class="form-group">
         <textarea [(ngModel)]="product.description" name="description" rows="5" placeholder="Въведете детайлно описание..."></textarea>
