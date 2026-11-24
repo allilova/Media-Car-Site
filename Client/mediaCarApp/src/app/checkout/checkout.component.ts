@@ -1,37 +1,37 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; 
-import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { CartService } from '../services/cart.service';
+import { CartItem, CartService } from '../services/cart.service';
+import { BookingService } from '../services/booking.service';
+import { EurPipe } from '../shared/eur.pipe';
+import { INSTALLATION, formatBgDate } from '../shared/slots';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [FormsModule, RouterLink, EurPipe],
   templateUrl: './checkout.component.html',
   styleUrl: './checkout.component.css'
 })
 export class CheckoutComponent implements OnInit {
-
-  cartItems: any[] = [];
-  totalPrice: number = 0;
+  cartItems: CartItem[] = [];
+  totalPrice = 0;
+  sending = false;
+  error = '';
+  done = false;
 
   formData = {
     name: '',
     phone: '',
     email: '',
-    deliveryType: 'office',
+    deliveryType: 'office' as 'office' | 'address',
     address: '',
-    paymentMethod: 'cod', 
-    cardName: '',
-    cardNumber: '',
-    cardExpiry: '',
-    cardCvv: ''
   };
 
   constructor(
     private cartService: CartService,
+    private bookingService: BookingService,
     private http: HttpClient,
     private router: Router
   ) {}
@@ -40,59 +40,59 @@ export class CheckoutComponent implements OnInit {
     this.cartService.cart$.subscribe(items => {
       this.cartItems = items;
       this.totalPrice = this.cartService.getTotalPrice();
-      
-      if (this.cartItems.length === 0) {
-        this.router.navigate(['/home']);
-      }
+      if (items.length === 0 && !this.done) this.router.navigate(['/basket-shop']);
     });
   }
 
+  /** Ако в количката има монтаж – доставката е до адреса на монтажа и се плаща на място */
+  get installation(): CartItem | undefined {
+    return this.cartItems.find(i => i.productId === INSTALLATION._id);
+  }
+
+  get installLabel(): string {
+    const [date, time] = (this.installation?.specs || '').split(' ');
+    return date ? `${formatBgDate(date)}, ${time} ч.` : '';
+  }
+
   placeOrder() {
-    if (!this.formData.name || !this.formData.phone || !this.formData.address) {
-      alert('Моля, попълнете полетата за Име, Телефон и Адрес/Офис!');
+    this.error = '';
+    const f = this.formData;
+    if (!f.name.trim() || !f.phone.trim() || !f.address.trim()) {
+      this.error = this.installation
+        ? 'Попълнете име, телефон и адрес за монтажа.'
+        : 'Попълнете име, телефон и офис или адрес за доставка.';
       return;
     }
 
-   
-    if (this.formData.paymentMethod === 'card') {
-      if (!this.formData.cardNumber || !this.formData.cardExpiry || !this.formData.cardCvv) {
-        alert('Моля, попълнете данните за банковата карта!');
-        return;
-      }
-    }
+    const inst = this.installation;
+    const address = inst ? `(МОНТАЖ) ${f.address}` : (f.deliveryType === 'office' ? `(ОФИС) ${f.address}` : `(АДРЕС) ${f.address}`);
 
-   
     const orderData = {
-      customer: {
-        name: this.formData.name,
-        phone: this.formData.phone,
-        email: this.formData.email,
-        city: 'Bulgaria', 
-        address: this.formData.deliveryType === 'office' 
-          ? `(ОФИС) ${this.formData.address}` 
-          : `(АДРЕС) ${this.formData.address}`
-      },
-      items: this.cartItems.map(item => ({
-        title: item.title,
-        quantity: item.quantity,
-        price: item.price,
-        variant: item.specs || 'Standard'
-      })),
-      totalPrice: this.totalPrice,
-      paymentMethod: this.formData.paymentMethod === 'cod' ? 'Наложен платеж' : 'Плащане с карта',
-      status: 'Pending'
+      customer: { name: f.name, phone: f.phone, email: f.email, address, city: inst ? 'София' : undefined },
+      items: this.cartItems.map(i => ({ productId: i.productId, variantId: i.variantId, quantity: i.quantity, variant: i.specs })),
+      paymentMethod: inst ? 'Плащане при монтаж' : 'Наложен платеж',
     };
 
-    
+    this.sending = true;
     this.http.post('/api/orders', orderData).subscribe({
-      next: (res) => {
-        alert('Поръчката е приета успешно! Ще се свържем с вас за потвърждение.');
-        this.cartService.clearCart(); 
-        this.router.navigate(['/home']); 
+      next: () => {
+        if (inst) {
+          const [date, time] = inst.specs.split(' ');
+          const products = this.cartItems.filter(i => i !== inst).map(i => i.title).join(', ');
+          this.bookingService.createBooking({
+            date, time,
+            package: 'Поръчка от сайта',
+            note: products,
+            user: { name: f.name, phone: f.phone, email: f.email, address: f.address }
+          }).subscribe({ error: () => { /* поръчката е приета; часът ще се потвърди по телефона */ } });
+        }
+        this.done = true;
+        this.sending = false;
+        this.cartService.clearCart();
       },
       error: (err) => {
-        console.error(err);
-        alert('Възникна грешка при изпращането. Моля, опитайте отново.');
+        this.sending = false;
+        this.error = err.error?.error || 'Поръчката не беше изпратена. Опитайте отново или се обадете.';
       }
     });
   }
