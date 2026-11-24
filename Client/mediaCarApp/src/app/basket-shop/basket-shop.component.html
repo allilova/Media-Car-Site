@@ -1,61 +1,42 @@
-<div class="basket-container">
-  
-  <div class="basket-header">
-    <button class="back-btn" routerLink="/home"> 
-      <i class="fa-solid fa-arrow-left"></i> 
-    </button>
-    <h2 style="display:inline-block; margin-left:15px;">Твоята количка</h2>
-  </div>
+<div class="wrap page">
+  <h1>Количка</h1>
 
   @if (cartItems.length === 0) {
-    <div class="empty-cart" style="text-align: center; padding: 40px;">
+    <div class="empty">
       <p>Количката е празна.</p>
-      <button class="buy-btn" routerLink="/home" style="font-size: 14px;">Към магазина</button>
+      <a class="btn btn-dark" routerLink="/home" fragment="packages">Вижте пакетите</a>
     </div>
   } @else {
-    
-    <div>
-      @for (item of cartItems; track item.id + item.variantId) {
-        <div class="cart-item-card">
-          
-          <button class="remove-btn" (click)="removeItem(item)">✕</button>
-
-          <div class="item-image">
+    <div class="layout">
+      <ul class="items">
+        @for (item of cartItems; track item.productId + (item.variantId ?? '')) {
+          <li class="item">
             <img [src]="item.image" [alt]="item.title">
-          </div>
+            <div class="text">
+              <h3>{{ item.title }}</h3>
+              @if (item.specs) { <p class="muted">{{ item.specs }}</p> }
+              <p class="unit">{{ item.price | eur }} за брой</p>
+            </div>
+            <div class="qty" role="group" [attr.aria-label]="'Количество ' + item.title">
+              <button (click)="decreaseQty(item)" aria-label="Намали">−</button>
+              <span>{{ item.quantity }}</span>
+              <button (click)="increaseQty(item)" aria-label="Увеличи">+</button>
+            </div>
+            <p class="line price">{{ item.price * item.quantity | eur }}</p>
+            <button class="remove" (click)="removeItem(item)" [attr.aria-label]="'Премахни ' + item.title"><i class="fa-solid fa-xmark"></i></button>
+          </li>
+        }
+      </ul>
 
-          <div class="item-details">
-            <h3>{{ item.title }}</h3>
-            <p style="font-size: 13px; color: #666; margin-bottom: 5px;">{{ item.specs }}</p>
-            
-            <p class="item-price">
-              Цена: {{ item.price }} лв. 
-              <span class="price-secondary"> (x{{ item.quantity }})</span>
-            </p>
-            <p style="font-weight: bold; margin-top: 5px;">
-              Общо: {{ item.price * item.quantity }} лв.
-            </p>
-          </div>
-
-          <div class="quantity-controls">
-            <button class="qty-btn" (click)="decreaseQty(item)">-</button>
-            <input type="text" [value]="item.quantity" readonly class="qty-input">
-            <button class="qty-btn" (click)="increaseQty(item)">+</button>
-          </div>
-
-        </div>
-      }
+      <aside class="summary">
+        <div class="row"><span>Общо</span><span class="price">{{ totalPrice | eur }}</span></div>
+        <p class="muted small">Доставката се изчислява от куриера. При монтаж плащате на място.</p>
+        <button class="btn btn-primary btn-block" (click)="openCheckoutFlow()">Продължи</button>
+      </aside>
     </div>
-
-    <div class="cart-summary">
-    <h3>Общо: {{ totalPrice }} лв.</h3>
-    
-    <button class="checkout-btn" (click)="openCheckoutFlow()"> ПОРЪЧАЙ </button>
-</div>
-
-
-@if (showUpsellModal) {
-    <app-basket-plus (closeModal)="showUpsellModal = false"></app-basket-plus>
-}
   }
 </div>
+
+@if (showUpsellModal) {
+  <app-basket-plus (closeModal)="showUpsellModal = false"></app-basket-plus>
+}
