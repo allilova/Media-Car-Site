@@ -1,66 +1,67 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { ProductService } from '../services/product.service';
 import { CartService } from '../services/cart.service';
+import { EurPipe } from '../shared/eur.pipe';
 
 @Component({
   selector: 'app-product-details',
-  imports: [CommonModule],
+  imports: [RouterLink, EurPipe],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css'
 })
-export class ProductDetailsComponent implements OnInit{
-product: any = {
-    title: '',
-    images: [],
-    variants: [],
-    specs: {} 
-  };
-
-  selectedImage: string = '';
-  selectedVariant: any = {};
+export class ProductDetailsComponent implements OnInit {
+  product: any = null;
+  notFound = false;
+  selectedImage = '';
+  selectedVariant: any = null;
   quantity = 1;
-  activeTab = 'desc';
+  activeTab: 'desc' | 'specs' | 'delivery' = 'desc';
+  added = false;
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private title: Title
   ) {}
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    
-    if (id) {
-      this.productService.getProductById(id).subscribe({
-        next: (data) => {
-          this.product = data;
-
-          if (this.product.images && this.product.images.length > 0) {
-            this.selectedImage = this.product.images[0];
-          }
-          if (this.product.variants && this.product.variants.length > 0) {
-            this.selectedVariant = this.product.variants[0];
-          }
-        },
-        error: (err) => console.error('Error fetching product', err)
-      });
-    }
+    if (!id) return;
+    this.productService.getProductById(id).subscribe({
+      next: (data) => {
+        this.product = data;
+        this.title.setTitle(`${data.title} – Retrofy`);
+        this.selectedImage = data.images?.[0] || 'mediaExample.PNG';
+        this.selectedVariant = data.variants?.[0] ?? null;
+      },
+      error: () => this.notFound = true
+    });
   }
 
-  onVariantChange(event: any) {
-    const variantId = event.target.value; 
-    const found = this.product.variants.find((v: any) => v._id === variantId || v.id === variantId);
-    if (found) {
-      this.selectedVariant = found;
-    }
+  get price(): number {
+    return this.selectedVariant?.price ?? this.product?.price;
   }
+
+  get isMultimedia(): boolean {
+    return this.product?.category === 'multimedia';
+  }
+
+  onVariantChange(event: Event) {
+    const id = (event.target as HTMLSelectElement).value;
+    this.selectedVariant = this.product.variants.find((v: any) => v._id === id) ?? this.selectedVariant;
+  }
+
   addToCart() {
-    if (!this.selectedVariant) return;
-
     this.cartService.addToCart(this.product, this.selectedVariant, this.quantity);
-    
-    alert('Продуктът е добавен в количката!');
+    this.added = true;
+  }
+
+  buyNow() {
+    this.addToCart();
+    this.router.navigate(['/basket-shop']);
   }
 }
