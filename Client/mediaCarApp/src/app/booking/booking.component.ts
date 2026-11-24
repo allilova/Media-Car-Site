@@ -1,105 +1,131 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; 
-import { FormsModule } from '@angular/forms';    
-import { BookingService } from '../services/booking.service'; 
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { BookingService } from '../services/booking.service';
+import { CAR_BRANDS, YEARS, PACKAGES, BRAND } from '../data/retrofy.data';
+import { slotsFor, toIso, formatBgDate } from '../shared/slots';
+
+interface Day { iso: string; n: number; past: boolean; weekend: boolean; }
 
 @Component({
   selector: 'app-booking',
   standalone: true,
-  imports: [CommonModule, FormsModule], 
+  imports: [FormsModule, RouterLink],
   templateUrl: './booking.component.html',
   styleUrl: './booking.component.css'
 })
 export class BookingComponent implements OnInit {
-  
-  currentDate = new Date();
-  currentMonth = this.currentDate.getMonth();
-  currentYear = this.currentDate.getFullYear();
-  daysInMonth: number[] = [];
-  emptyDays: number[] = [];
-  monthNames = ["Януари", "Февруари", "Март", "Април", "Май", "Юни", "Юли", "Август", "Септември", "Октомври", "Ноември", "Декември"];
-  
-  selectedDate: number | null = null;
-  selectedTime: string | null = null;
+  monthNames = ['Януари', 'Февруари', 'Март', 'Април', 'Май', 'Юни', 'Юли', 'Август', 'Септември', 'Октомври', 'Ноември', 'Декември'];
+  today = toIso(new Date());
+  month = new Date().getMonth();
+  year = new Date().getFullYear();
+  days: Day[] = [];
+  offset: number[] = [];
 
-  weekendSlots = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
-  weekdaySlots = ['18:30', '19:00', '19:30', '20:00', '20:30'];
-  availableSlots: string[] = [];
+  selectedDate = '';
+  selectedTime = '';
+  takenSlots: string[] = [];
 
-  userData = {
-    name: '',
-    email: '',
-    phone: '',
-    address: ''
+  brands = CAR_BRANDS;
+  years = YEARS;
+  packageOptions = [...PACKAGES.map(p => `${p.name} (${p.price})`), 'Само монтаж (моя медия)', 'Консултация / оглед'];
+  phone = BRAND.phone;
+
+  form = {
+    package: '',
+    brand: '', model: '', year: '',
+    name: '', phone: '', email: '', address: '', note: ''
   };
 
-  constructor(private bookingService: BookingService) {} 
+  sending = false;
+  error = '';
+  confirmed = false;
+
+  constructor(private bookingService: BookingService, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    this.generateCalendar();
+    this.buildMonth();
+    const q = this.route.snapshot.queryParamMap;
+    const pkg = q.get('package');
+    if (pkg) {
+      this.form.package = this.packageOptions.find(o => o.startsWith(pkg)) || pkg;
+      if (!this.packageOptions.includes(this.form.package)) this.packageOptions.unshift(this.form.package);
+    }
+    this.form.brand = q.get('brand') || '';
+    this.form.model = q.get('model') || '';
+    this.form.year = q.get('year') || '';
   }
 
+  get models(): string[] {
+    return this.brands.find(b => b.brand === this.form.brand)?.models ?? [];
+  }
 
-  generateCalendar() {
-     const firstDay = new Date(this.currentYear, this.currentMonth, 1).getDay();
-     const startOffset = firstDay === 0 ? 6 : firstDay - 1; 
-     const daysCount = new Date(this.currentYear, this.currentMonth + 1, 0).getDate();
-     this.emptyDays = Array(startOffset).fill(0);
-     this.daysInMonth = Array.from({ length: daysCount }, (_, i) => i + 1);
+  get slots(): string[] {
+    return slotsFor(this.selectedDate);
+  }
+
+  get dateLabel(): string {
+    return formatBgDate(this.selectedDate);
+  }
+
+  get canGoBack(): boolean {
+    const now = new Date();
+    return this.year > now.getFullYear() || this.month > now.getMonth();
+  }
+
+  buildMonth() {
+    const first = new Date(this.year, this.month, 1).getDay();
+    this.offset = Array(first === 0 ? 6 : first - 1).fill(0);
+    const count = new Date(this.year, this.month + 1, 0).getDate();
+    this.days = Array.from({ length: count }, (_, i) => {
+      const d = new Date(this.year, this.month, i + 1);
+      const iso = toIso(d);
+      return { iso, n: i + 1, past: iso < this.today, weekend: d.getDay() === 0 || d.getDay() === 6 };
+    });
   }
 
   changeMonth(step: number) {
-     this.currentMonth += step;
-     if (this.currentMonth > 11) { this.currentMonth = 0; this.currentYear++; }
-     else if (this.currentMonth < 0) { this.currentMonth = 11; this.currentYear--; }
-     this.selectedDate = null; 
-     this.selectedTime = null;
-     this.generateCalendar();
+    this.month += step;
+    if (this.month > 11) { this.month = 0; this.year++; }
+    if (this.month < 0) { this.month = 11; this.year--; }
+    this.buildMonth();
   }
 
-  selectDate(day: number) {
-    this.selectedDate = day;
-    this.selectedTime = null; 
-
-    
-    const checkDate = new Date(this.currentYear, this.currentMonth, day);
-    const dayOfWeek = checkDate.getDay(); 
-
-    
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      this.availableSlots = this.weekendSlots; 
-    } else {
-      this.availableSlots = this.weekdaySlots; 
-    }
+  selectDate(day: Day) {
+    if (day.past) return;
+    this.selectedDate = day.iso;
+    this.selectedTime = '';
+    this.takenSlots = [];
+    this.bookingService.getTakenSlots(day.iso).subscribe(t => this.takenSlots = t);
   }
-  selectTime(time: string) { this.selectedTime = time; }
 
-  
-  submitBooking() {
-    if (!this.selectedDate || !this.selectedTime || !this.userData.name || !this.userData.phone) {
-      alert("Моля, попълнете всички задължителни полета!");
-      return;
-    }
+  isPastSlot(time: string): boolean {
+    if (this.selectedDate !== this.today) return false;
+    const [h, m] = time.split(':').map(Number);
+    const now = new Date();
+    return h * 60 + m <= now.getHours() * 60 + now.getMinutes() + 120;
+  }
 
-   
-    const bookingData = {
-      date: `${this.selectedDate} ${this.monthNames[this.currentMonth]} ${this.currentYear}`,
+  submit() {
+    this.error = '';
+    const f = this.form;
+    if (!this.selectedDate || !this.selectedTime) { this.error = 'Изберете ден и час.'; return; }
+    if (!f.name.trim() || !f.phone.trim() || !f.address.trim()) { this.error = 'Попълнете име, телефон и адрес за монтажа.'; return; }
+
+    this.sending = true;
+    this.bookingService.createBooking({
+      date: this.selectedDate,
       time: this.selectedTime,
-      user: this.userData
-    };
-
-    
-    this.bookingService.createBooking(bookingData).subscribe({
-      next: (res) => {
-        alert("Вашият час е запазен успешно!");
-     
-        this.selectedDate = null;
-        this.selectedTime = null;
-        this.userData = { name: '', email: '', phone: '', address: '' };
-      },
+      package: f.package,
+      car: { brand: f.brand, model: f.model, year: f.year },
+      note: f.note,
+      user: { name: f.name, phone: f.phone, email: f.email, address: f.address }
+    }).subscribe({
+      next: () => { this.sending = false; this.confirmed = true; },
       error: (err) => {
-        console.error(err);
-        alert(err.error?.error || "Възникна грешка при резервацията.");
+        this.sending = false;
+        this.error = err.error?.error || 'Часът не беше запазен. Обадете ни се.';
+        if (err.status === 409) this.selectDate(this.days.find(d => d.iso === this.selectedDate)!);
       }
     });
   }
