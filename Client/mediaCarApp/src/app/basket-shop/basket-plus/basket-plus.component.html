@@ -1,71 +1,47 @@
-<div class="modal-overlay">
-  <div class="modal-content">
-    <button class="close-icon" (click)="close()">
-        <i class="fa-solid fa-times"></i>
-    </button>
-    <div class="modal-header">
-      <h3>Желаете ли професионален монтаж?</h3>
-      <p>Спестете време! Ние ще дойдем на адрес и ще монтираме медията.</p>
-    </div>
+<div class="overlay" (click)="close()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="up-title" (click)="$event.stopPropagation()">
+    <button class="x" (click)="close()" aria-label="Затвори"><i class="fa-solid fa-xmark"></i></button>
+    <h2 id="up-title">Да го монтираме ли?</h2>
+    <p class="muted">Идваме на ваш адрес в София и за около 2 часа медията работи – с волана, камерата и телефона ви.</p>
 
-    <div class="upsell-option">
-      <div class="option-info">
-        <i class="fa-solid fa-screwdriver-wrench"></i>
-        <div class="text">
-          <strong>Монтаж на адрес (София)</strong>
-          <span>+70.00 лв</span>
-        </div>
-      </div>
-      <label class="switch">
-        <input type="checkbox" (change)="toggleInstallation($event)" [checked]="wantsInstallation">
-        <span class="slider round"></span>
-      </label>
-    </div>
+    <button class="option" [class.on]="wantsInstallation" (click)="toggleInstallation()" [attr.aria-pressed]="wantsInstallation">
+      <span class="check" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
+      <span class="opt-text"><strong>{{ installation.title }}</strong><span>Без рязане на кабели, с гаранция за труда</span></span>
+      <span class="price">+{{ installation.price | eur }}</span>
+    </button>
 
     @if (wantsInstallation) {
-      <div class="datetime-picker" style="margin-top: 15px; padding: 15px; background: #f9f9f9; border-radius: 8px;">
-        <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 14px;">Изберете удобен ден и час:</h4>
-        <div style="display: flex; gap: 10px;">
-          <input type="date" [(ngModel)]="installDate" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-          <input type="time" [(ngModel)]="installTime" style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+      <div class="when">
+        <div class="field">
+          <label for="inst-date">Ден</label>
+          <input id="inst-date" type="date" [min]="minDate" [(ngModel)]="installDate" (ngModelChange)="onDateChange()">
         </div>
+        @if (installDate) {
+          <p class="field-hint">{{ dateLabel }}</p>
+          <div class="slots">
+            @for (t of slots; track t) {
+              <button type="button" [class.on]="installTime === t" [disabled]="takenSlots.includes(t)" (click)="installTime = t">{{ t }}</button>
+            }
+          </div>
+        }
       </div>
     }
 
-    <div class="accessories-section">
-      <h4>Добави полезни аксесоари:</h4>
-      <div class="accessory-grid">
-        
-        <div class="accessory-card">
-          <img src="accessoriesExample.PNG" alt="Камера"> 
-          <div class="acc-details">
-            <span>Задна камера</span>
-            <span class="price">+15 лв</span>
-          </div>
-          <button class="add-btn" 
-                  (click)="addAccessory('Задна камера', 15, 'accessoriesExample.PNG', 'acc-cam-01')">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
-        
-        <div class="accessory-card">
-          <img src="accessoriesExample.PNG" alt="OBD">
-          <div class="acc-details">
-            <span>OBD скенер</span>
-            <span class="price">+20 лв</span>
-          </div>
-          <button class="add-btn" 
-                  (click)="addAccessory('OBD Скенер', 20, 'accessoriesExample.PNG', 'acc-obd-01')">
-            <i class="fa-solid fa-plus"></i>
-          </button>
-        </div>
+    @if (accessories.length) {
+      <h3>Добавете към поръчката</h3>
+      <ul class="acc">
+        @for (a of accessories; track a._id) {
+          <li>
+            <img [src]="a.images?.[0] || 'accessoriesExample.PNG'" alt="">
+            <span class="acc-title">{{ a.title }}</span>
+            <span class="price">{{ (a.variants?.[0]?.price ?? a.price) | eur }}</span>
+            <button class="btn btn-ghost" (click)="addAccessory(a)" [disabled]="addedIds.has(a._id)">{{ addedIds.has(a._id) ? 'Добавено' : 'Добави' }}</button>
+          </li>
+        }
+      </ul>
+    }
 
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-black" (click)="proceedToCheckout()">Продължи към плащане</button>
-    </div>
-
+    @if (error) { <p class="err" role="alert">{{ error }}</p> }
+    <button class="btn btn-primary btn-block" (click)="proceedToCheckout()">Към поръчката</button>
   </div>
 </div>
