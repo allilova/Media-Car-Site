@@ -1,56 +1,35 @@
-<div class="search-page-container">
-  
-  <div class="search-bar-section">
-    <input type="text" 
-           class="search-input" 
-           placeholder="Търсене на мултимедия, аксесоари..." 
-           [(ngModel)]="searchQuery"
-           (keyup.enter)="onSearch()">
-           
-    <button class="search-btn" (click)="onSearch()">
-      <i class="fa-solid fa-magnifying-glass"></i> Търси
-    </button>
+<div class="wrap page">
+  <h1>Търсене</h1>
+  <form class="bar" (ngSubmit)="onSearch()" role="search">
+    <label for="q" class="sr">Търсене</label>
+    <input id="q" name="q" type="search" [(ngModel)]="searchQuery" placeholder="Марка, модел или продукт – напр. Golf 6, камера">
+    <button class="btn btn-dark" type="submit"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i> Търси</button>
+  </form>
+  <div class="chips">
+    @for (b of brands; track b) { <button type="button" (click)="pick(b)">{{ b }}</button> }
   </div>
 
-  @if (!hasSearched) {
-    <div class="empty-state">
-      <i class="fa-solid fa-magnifying-glass-arrow-right placeholder-icon"></i>
-      <h3>Какво търсите днес?</h3>
-      <p>Въведете име на автомобил или продукт, за да видите резултатите.</p>
+  @if (loading) { <p class="muted">Търсим…</p> }
+
+  @if (hasSearched && !loading && results.length === 0) {
+    <div class="empty">
+      <p>Няма продукти за „{{ searchQuery }}“ в каталога.</p>
+      <p>Най-често имаме решение – <a routerLink="/home" fragment="contacts">пишете ни</a> с модела и годината на колата.</p>
     </div>
   }
 
-  @if (hasSearched && results.length === 0) {
-    <div class="empty-state">
-      <i class="fa-regular fa-face-frown-open placeholder-icon"></i>
-      <h3>Няма намерени резултати</h3>
-      <p>Не открихме продукти за "<strong>{{ searchQuery }}</strong>".</p>
-      <p class="suggestion">Опитайте с друга ключова дума или разгледайте каталога.</p>
-      <button routerLink="/home" class="back-btn">Към началната страница</button>
-    </div>
-  }
-
-  @if (hasSearched && results.length > 0) {
-    <h3 class="results-label">
-      Намерени резултати: {{ results.length }}
-    </h3>
-
-    <div class="results-grid">
+  @if (!loading && results.length > 0) {
+    <p class="count">{{ results.length }} резултата за „{{ searchQuery }}“</p>
+    <div class="product-grid">
       @for (product of results; track product._id) {
-          <div class="product-card">
-            <div class="img-container">
-              <img [src]="product.img" [alt]="product.title">
-            </div>
-            <div class="card-info">
-              <h4>{{ product.title }}</h4>
-              <p class="price">
-                  {{ product.variants?.[0]?.price || product.price }} лв.
-              </p>
-              <button class="view-btn" [routerLink]="['/product', product._id]">Виж повече</button>
-            </div>
+        <a class="product-card" [routerLink]="['/product', product._id]">
+          <div class="media"><img [src]="product.img" [alt]="product.title" loading="lazy"></div>
+          <div class="body">
+            <h3>{{ product.title }}</h3>
+            <p class="price">{{ product.fromPrice | eur }}</p>
           </div>
+        </a>
       }
     </div>
   }
-
 </div>
