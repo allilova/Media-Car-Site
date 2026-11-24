@@ -1,65 +1,42 @@
-<div class="catalog-container">
-    
-    <div class="catalog-header">
-        <h1 class="section-title">Услуги</h1>
-        
-         @if (isAdmin) {
-        <button class="add-new-btn" routerLink="/admin-create">
-            <i class="fa-solid fa-plus"></i> Добави нов
-        </button>
-    }
+@if (services.length > 0 || isAdmin) {
+  <div class="head">
+    <div class="section-head">
+      <h2>Още услуги</h2>
+      <p>Допълнителни монтажи и настройки, които правим на адрес.</p>
     </div>
-
-    @if (services.length === 0) {
-        <div>
-            В момента няма добавени услуги.
-        </div>
+    @if (isAdmin) {
+      <a class="btn btn-dark" routerLink="/admin-create" [queryParams]="{ category: 'services' }"><i class="fa-solid fa-plus"></i> Добави</a>
     }
+  </div>
 
+  @if (services.length === 0) {
+    <p class="empty">Няма добавени услуги. Добавете ги от бутона горе – клиентите виждат секцията, щом има поне една.</p>
+  }
+
+  <div class="list">
     @for (service of services; track service._id) {
-        <div class="main-card" style="position: relative;">
-            @if (isAdmin) {
-                <div class="card-admin-actions">
-                    <button class="icon-btn edit-btn" [routerLink]="['/admin-edit', service._id]" title="Редактирай">
-                        <i class="fa-solid fa-pen"></i>
-                    </button>
-                    
-                    <button class="icon-btn delete-btn" (click)="deleteService(service._id)" title="Изтрий">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                </div>
-            }
-            
-
-            <div class="img-container">
-                <img [src]="service.images && service.images.length > 0 ? service.images[0] : 'assets/servicesImg.png'" 
-                     [alt]="service.title">
-            </div>
-            
-            <div class="text-content">
-                <h1>{{ service.title }}</h1>
-                
-                <p class="description" >{{ service.description }}</p>
-
-                <ul class="service-details">
-                    <li>
-                        <i class="fa-solid fa-tag"></i> 
-                        <span><strong>Цена:</strong> 
-                            <span class="price">
-                                @if (service.oldPrice) {
-                                    <span>
-                                        {{ service.oldPrice }} лв.
-                                    </span>
-                                }
-                                {{ service.price }} лв.
-                            </span>
-                        </span>
-                    </li>
-                </ul>
-
-                <button class="cta-button" routerLink="/booking">Запази час</button>
-            </div>
-            
+      <article class="row">
+        @if (service.images?.length) {
+          <img [src]="service.images[0]" [alt]="service.title" loading="lazy">
+        }
+        <div class="text">
+          <h3>{{ service.title }}</h3>
+          @if (service.description) { <p>{{ service.description }}</p> }
         </div>
+        <div class="side">
+          <p class="price">
+            @if (service.oldPrice) { <s>{{ service.oldPrice | eur }}</s> }
+            {{ service.price | eur }}
+          </p>
+          <a class="btn btn-ghost" routerLink="/booking" [queryParams]="{ package: service.title }">Запази час</a>
+        </div>
+        @if (isAdmin) {
+          <div class="admin-actions">
+            <a class="icon-btn" [routerLink]="['/admin-edit', service._id]" title="Редактирай"><i class="fa-solid fa-pen"></i></a>
+            <button class="icon-btn danger" (click)="deleteService(service._id)" title="Изтрий"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        }
+      </article>
     }
-</div>
+  </div>
+}
