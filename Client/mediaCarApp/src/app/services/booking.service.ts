@@ -16,6 +16,10 @@ export class BookingService {
     return this.http.post(this.apiUrl, bookingData);
   }
   
+  getTakenSlots(date: string): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/taken`, { params: { date } });
+  }
+
   getAllBookings(): Observable<any[]> {
     return this.http.get<any[]>(this.apiUrl);
   }
