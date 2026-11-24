@@ -14,7 +14,7 @@ export class ProductService {
   createProduct(productData: any): Observable<any> {
     return this.http.post(this.apiUrl, productData);
   }
-  getProducts(category?: string, search?: string): Observable<any[]> {
+  getProducts(category?: string, search?: string, car?: string): Observable<any[]> {
     let params = new HttpParams();
     
     if (category) {
@@ -24,6 +24,10 @@ export class ProductService {
     // НОВО: Ако има дума за търсене, я добавяме в параметрите
     if (search) {
       params = params.set('search', search);
+    }
+
+    if (car) {
+      params = params.set('car', car);
     }
 
     return this.http.get<any[]>(this.apiUrl, { params });
