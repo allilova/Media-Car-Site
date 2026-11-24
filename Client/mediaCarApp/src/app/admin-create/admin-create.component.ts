@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink, Router, ActivatedRoute } from '@angular/router';
 import { ProductService } from '../services/product.service';
 
 @Component({
@@ -25,12 +25,16 @@ export class AdminCreateComponent {
         resolution: '1280x720',
         power: '4 x 45W'
     },
-    variants: [{ ram: 2, rom: 32, price: 270, cpu: '4-ядрен' }]
+    variants: [{ ram: 4, rom: 64, price: 0, cpu: '8-ядрен' }]
   };
 
   previewImages: string[] = [];
+  compatibilityText = '';
 
-  constructor(private productService: ProductService, private router: Router) {}
+  constructor(private productService: ProductService, private router: Router, route: ActivatedRoute) {
+    const category = route.snapshot.queryParamMap.get('category');
+    if (category) this.product.category = category;
+  }
 
   onFileSelected(event: any) {
      if (event.target.files) {
@@ -48,7 +52,9 @@ export class AdminCreateComponent {
     
     const finalProduct = {
       ...this.product,
-      images: this.previewImages 
+      images: this.previewImages,
+      compatibility: this.compatibilityText.split(',').map(s => s.trim()).filter(Boolean),
+      price: this.product.price ?? 0
     };
 
     
@@ -62,7 +68,7 @@ export class AdminCreateComponent {
     this.productService.createProduct(finalProduct).subscribe({
       next: (response) => {
         alert('Записът е добавен успешно!');
-        this.router.navigate(['/']); 
+        this.router.navigate(['/home']);
       },
       error: (error) => {
         console.error('Грешка:', error);
@@ -72,7 +78,7 @@ export class AdminCreateComponent {
   }
   
   addVariant() {
-    this.product.variants.push({ ram: 2, rom: 32, price: 270, cpu: '4-ядрен'});
+    this.product.variants.push({ ram: 4, rom: 64, price: 0, cpu: '8-ядрен' });
   }
 
   removeVariant(index: number) {
