@@ -1,14 +1,14 @@
+import { EurPipe } from '../shared/eur.pipe';
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BookingService } from '../services/booking.service';
 import { OrderService } from '../services/order.service';
-import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [EurPipe, CommonModule, FormsModule],
   templateUrl: './admin-orders.component.html',
   styleUrls: ['./admin-orders.component.css']
 })
@@ -142,7 +142,7 @@ export class AdminOrdersComponent implements OnInit {
 
   // --- EXCEL EXPORT ---
   exportToExcel() {
-    let dataToExport = [];
+    let dataToExport: any[] = [];
     let fileName = '';
 
     if (this.activeTab === 'bookings') {
@@ -152,9 +152,11 @@ export class AdminOrdersComponent implements OnInit {
         'Клиент': b.user.name,
         'Телефон': b.user.phone,
         'Адрес': b.user.address,
-        'Имейл': b.user.email
+        'Имейл': b.user.email,
+        'Кола': [b.car?.brand, b.car?.model, b.car?.year].filter(Boolean).join(' '),
+        'Пакет': b.package || ''
       }));
-      fileName = 'Reservations.xlsx';
+      fileName = 'Reservations.csv';
     } else {
       dataToExport = this.filteredOrders.map(o => ({
         'Номер Поръчка': o._id.slice(-6),
@@ -163,17 +165,24 @@ export class AdminOrdersComponent implements OnInit {
         'Телефон': o.customer.phone,
         'Адрес': o.customer.address,
         'Артикули': o.items.map((i: any) => `${i.title} (x${i.quantity}) ${i.variant ? ' - ' + i.variant : ''}`).join('; '),
-        'Сума (лв)': o.totalPrice,
+        'Сума (€)': o.totalPrice,
         'Начин на плащане': o.paymentMethod || 'Наложен платеж',
         'Статус': o.status
       }));
-      fileName = 'Orders.xlsx';
+      fileName = 'Orders.csv';
     }
 
-    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dataToExport);
-    const wb: XLSX.WorkBook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
-    XLSX.writeFile(wb, fileName);
+    // CSV, който Excel отваря директно (BOM за кирилицата, ; за българските настройки)
+    if (!dataToExport.length) return;
+    const cell = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const headers = Object.keys(dataToExport[0]);
+    const csv = [headers.map(cell).join(';'), ...dataToExport.map((r: any) => headers.map(h => cell(r[h])).join(';'))].join('\r\n');
+    const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   // --- СТАТИСТИКА ---
