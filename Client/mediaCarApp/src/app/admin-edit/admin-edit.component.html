@@ -4,7 +4,7 @@
       <div class="header-text">
         <h2>Редактиране на продукт</h2>
       </div>
-      <a routerLink="/" class="back-link">
+      <a routerLink="/home" class="back-link">
         <i class="fa-solid fa-xmark"></i> Отказ
       </a>
     </div>
@@ -26,6 +26,7 @@
             <option value="multimedia">Мултимедии</option>
             <option value="accessories">Аксесоари</option>
             <option value="services">Услуги</option>
+            <option value="portfolio">Портфолио</option>
           </select>
         </div>
         <div class="form-group">
@@ -91,6 +92,12 @@
           <div class="form-group"><label>Мощност</label><input type="text" [(ngModel)]="product.specs.power" name="power"></div>
       </div>
 
+
+      <div class="section-title">Подходящ за коли</div>
+      <div class="form-group">
+        <input type="text" [(ngModel)]="compatibilityText" name="compatibility" placeholder="напр. VW Golf VI, VW Golf VII, Škoda Octavia II">
+        <small style="color:#5B6878">Разделете със запетая. По тези думи клиентите намират продукта от „Коя е вашата кола?“ и търсенето.</small>
+      </div>
       <div class="section-title">Описание</div>
       <div class="form-group">
         <textarea [(ngModel)]="product.description" name="description" rows="5"></textarea>
