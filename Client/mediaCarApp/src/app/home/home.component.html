@@ -1,35 +1,35 @@
-<div class="hero-banner" id="hero-banner">
-    <img src="Home.png" alt="Car Interior Dashboard">
-    
-    <div class="hero-overlay">
-        <div class="hero-content">
-            <h1>Бъдещето на твоя автомобил</h1>
-            <p>Премиум мултимедии, навигации и аксесоари с професионален монтаж.</p>
-            <button (click)="scrollToCatalog()">Разгледай Каталога</button>
-        </div>
-    </div>
-</div>
-
-<section id="media-catalog">
-    <app-media-catalog></app-media-catalog>
-</section>
-
-<section id="accessories-catalog">
-    <app-accessories-catalog></app-accessories-catalog>
-</section>
-
-<section id="services">
-    <app-services-catalog></app-services-catalog>
-</section>
-
-@if (!isAdmin) {
-    <section id="contacts">
-        <app-contact></app-contact>
-    </section>
+@if (isAdmin) {
+  <section id="admin-orders" class="admin-zone">
+    <app-admin-orders></app-admin-orders>
+  </section>
 }
 
-@if (isAdmin) {
-    <section id="admin-orders">
-        <app-admin-orders></app-admin-orders>
-    </section>
+<app-hero></app-hero>
+<app-packages></app-packages>
+<app-steps></app-steps>
+
+<section id="media-catalog" class="section">
+  <div class="wrap"><app-media-catalog></app-media-catalog></div>
+</section>
+
+<app-labor></app-labor>
+
+<section id="accessories-catalog" class="section">
+  <div class="wrap"><app-accessories-catalog></app-accessories-catalog></div>
+</section>
+
+<app-trust></app-trust>
+<app-portfolio></app-portfolio>
+
+<section id="services" class="section services">
+  <div class="wrap"><app-services-catalog></app-services-catalog></div>
+</section>
+
+<app-b2b></app-b2b>
+<app-faq></app-faq>
+
+@if (!isAdmin) {
+  <section id="contacts" class="section">
+    <div class="wrap"><app-contact></app-contact></div>
+  </section>
 }
