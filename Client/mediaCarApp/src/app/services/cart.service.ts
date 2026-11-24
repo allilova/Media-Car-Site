@@ -2,135 +2,92 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export interface CartItem {
-  id: string;      
-  variantId: number; 
+  productId: string;
+  variantId: string | null;
   title: string;
   image: string;
   price: number;
   quantity: number;
-  specs: string;   
+  specs: string;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
-export class CartService {
-private cartKey = 'my_shop_cart'; 
+const CART_KEY = 'retrofy_cart';
 
-  private cartSubject = new BehaviorSubject<CartItem[]>([]);
+@Injectable({ providedIn: 'root' })
+export class CartService {
+  private cartSubject = new BehaviorSubject<CartItem[]>(this.load());
   cart$ = this.cartSubject.asObservable();
 
-  constructor() {
-   
-    this.loadCart();
+  get items(): CartItem[] {
+    return this.cartSubject.value;
   }
 
-  
-  private loadCart() {
-    const savedCart = localStorage.getItem(this.cartKey);
-    if (savedCart) {
-      this.cartSubject.next(JSON.parse(savedCart));
+  get count(): number {
+    return this.items.reduce((s, i) => s + i.quantity, 0);
+  }
+
+  private load(): CartItem[] {
+    try {
+      const saved = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+      // Стари записи без productId (от предишната версия) се изхвърлят
+      return Array.isArray(saved) ? saved.filter((i: any) => i && i.productId) : [];
+    } catch {
+      return [];
     }
   }
 
+  private save(items: CartItem[]) {
+    this.cartSubject.next(items);
+    try { localStorage.setItem(CART_KEY, JSON.stringify(items)); } catch { /* private mode */ }
+  }
 
-addToCart(product: any, variant: any, quantity: number) {
-    const currentCart = this.cartSubject.value;
-    
-    // Безопасно взимане на id и цена, дори ако variant e null (напр. при услуги)
-    const vId = variant ? variant.id : 1;
-    const vPrice = variant ? variant.price : product.price;
+  /** variant е вариант от Mongo (с _id) или null за продукти без варианти */
+  addToCart(product: any, variant: any | null, quantity = 1, specsOverride?: string) {
+    const productId: string = product._id || product.id;
+    const variantId: string | null = variant?._id ?? null;
+    const items = [...this.items];
+    const existing = items.find(i => i.productId === productId && i.variantId === variantId);
 
-    const existingItem = currentCart.find(item => 
-      item.id === product._id && item.variantId === vId
-    );
-
-    if (existingItem) {
-      existingItem.quantity += quantity;
+    if (existing) {
+      existing.quantity += quantity;
     } else {
-      // Определяне на характеристиките (specs) гъвкаво
-      const itemSpecs = variant && variant.specs 
-        ? variant.specs 
-        : (variant && variant.ram ? `${variant.ram}GB RAM / ${variant.rom}GB ROM - ${variant.cpu}` : product.specs || '');
-
-      // Определяне на снимката гъвкаво
-      const itemImage = product.images && product.images.length > 0 
-        ? product.images[0] 
-        : (product.img || 'sevicesImg.png');
-
-      const newItem: CartItem = {
-        id: product._id || product.id, 
-        variantId: vId,
+      const specs = specsOverride
+        ?? (variant?.ram ? `${variant.ram}GB RAM / ${variant.rom}GB ROM – ${variant.cpu}` : '');
+      items.push({
+        productId,
+        variantId,
         title: product.title,
-        image: itemImage, 
-        price: vPrice,
-        quantity: quantity,
-        specs: itemSpecs
-      };
-      currentCart.push(newItem);
+        image: product.images?.[0] || product.img || 'logo.png',
+        price: Number(variant?.price ?? product.price) || 0,
+        quantity,
+        specs,
+      });
     }
-
-    this.updateCart(currentCart);
+    this.save(items);
   }
 
-removeItem(productId: string) {
-    const currentItems = this.cartSubject.value;
-    
-
-    const updatedItems = currentItems.filter((item: any) => item._id !== productId);
-    
-    this.cartSubject.next(updatedItems);
-    this.saveCartToLocalStorage(updatedItems);
+  /** Маха всички редове на даден продукт (напр. услугата за монтаж) */
+  removeProduct(productId: string) {
+    this.save(this.items.filter(i => i.productId !== productId));
   }
 
-  private saveCartToLocalStorage(items: any[]) {
-    localStorage.setItem('cart', JSON.stringify(items));
+  removeFromCart(productId: string, variantId: string | null) {
+    this.save(this.items.filter(i => !(i.productId === productId && i.variantId === variantId)));
   }
 
-  private loadCartFromLocalStorage(): any[] {
-    const saved = localStorage.getItem('cart');
-    return saved ? JSON.parse(saved) : [];
+  updateQuantity(productId: string, variantId: string | null, change: number) {
+    const items = this.items.map(i => ({ ...i }));
+    const item = items.find(i => i.productId === productId && i.variantId === variantId);
+    if (!item) return;
+    item.quantity += change;
+    this.save(item.quantity < 1 ? items.filter(i => i !== item) : items);
   }
 
- 
-  
-  removeFromCart(productId: string, variantId: number) {
-    const currentCart = this.cartSubject.value;
-    const updatedCart = currentCart.filter(item => 
-      !(item.id === productId && item.variantId === variantId)
-    );
-    this.updateCart(updatedCart);
-  }
-
-
-  updateQuantity(productId: string, variantId: number, change: number) {
-    const currentCart = this.cartSubject.value;
-    const item = currentCart.find(i => i.id === productId && i.variantId === variantId);
-
-    if (item) {
-      item.quantity += change;
-      if (item.quantity <= 0) {
-        this.removeFromCart(productId, variantId);
-        return;
-      }
-      this.updateCart(currentCart);
-    }
+  getTotalPrice(): number {
+    return this.items.reduce((s, i) => s + i.price * i.quantity, 0);
   }
 
   clearCart() {
-    this.cartSubject.next([]);
-    localStorage.removeItem('cart');
+    this.save([]);
   }
-
-  private updateCart(cart: CartItem[]) {
-    this.cartSubject.next(cart);
-    localStorage.setItem(this.cartKey, JSON.stringify(cart));
-  }
-
- 
-  getTotalPrice() {
-     return this.cartSubject.value.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-  }
-
-
 }
