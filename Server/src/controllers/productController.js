@@ -22,7 +22,7 @@ router.post('/', isAdmin, async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
-        const { category, search } = req.query;
+        const { category, search, car } = req.query;
         
         let filter = {};
         
@@ -30,8 +30,16 @@ router.get('/', async (req, res) => {
             filter.category = category;
         }
 
+        const escapeRegex = (t) => String(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
         if (search) {
-            filter.title = { $regex: search, $options: 'i' };
+            const rx = { $regex: escapeRegex(search), $options: 'i' };
+            filter.$or = [{ title: rx }, { description: rx }, { compatibility: rx }];
+        }
+
+        // Търсене по кола: "BMW", "BMW 3 серия" и т.н.
+        if (car) {
+            filter.compatibility = { $regex: escapeRegex(car), $options: 'i' };
         }
 
         const products = await Product.find(filter);
@@ -61,8 +69,12 @@ router.get('/:id', async (req, res) => {
 });
 
 router.delete('/:id', isAdmin, async (req, res) => {
-    await Product.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Deleted' });
+    try {
+        await Product.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Deleted' });
+    } catch (err) {
+        res.status(500).json({ error: 'Грешка при изтриване' });
+    }
 });
 
 router.put('/:id',isAdmin, async (req, res) => {

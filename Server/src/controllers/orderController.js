@@ -1,140 +1,127 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import Order from '../models/Order.js';
+import Product from '../models/Product.js';
 import { isAdmin } from '../middlewares/adminMiddleware.js';
-import nodemailer from 'nodemailer'; // <--- 1. Импортираме Nodemailer
+import { sendMail, esc, eur } from '../lib/mailer.js';
+import { MAIL_TO } from '../config/constants.js';
 
 const router = Router();
 
-// --- КОНФИГУРАЦИЯ НА ПОЩАТА ---
-// (Същата като в contactController)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'borislav.borisov2003b@gmail.com', 
-        pass: 'jmku lvdu tsaf erjy'      
-    }
-});
+// Артикули, които не са в базата, а са фиксирани услуги
+const FIXED_ITEMS = {
+    'service-installation': { title: 'Мобилен монтаж на адрес (София)', price: 70 },
+};
 
+// Цената се смята на сървъра – не вярваме на сумата, която идва от браузъра.
+async function priceItems(items = []) {
+    const priced = [];
+    for (const item of items) {
+        const quantity = Math.max(1, Math.min(10, parseInt(item.quantity, 10) || 1));
+        const fixed = FIXED_ITEMS[item.productId];
+        if (fixed) {
+            priced.push({ ...fixed, productId: item.productId, quantity, variant: item.variant });
+            continue;
+        }
+        if (!mongoose.isValidObjectId(item.productId)) throw new Error('Невалиден продукт в количката.');
+        const product = await Product.findById(item.productId);
+        if (!product) throw new Error('Продукт от количката вече не е наличен.');
+        const variant = item.variantId ? product.variants.id(item.variantId) : null;
+        priced.push({
+            productId: product._id.toString(),
+            variantId: variant?._id?.toString(),
+            title: product.title,
+            quantity,
+            price: variant?.price ?? product.price,
+            variant: variant ? `${variant.ram}GB RAM / ${variant.rom}GB ROM – ${variant.cpu}` : item.variant,
+        });
+    }
+    return priced;
+}
+
+const itemsHtml = (items) => items.map(i =>
+    `<li style="margin-bottom:8px">${esc(i.title)} ×${i.quantity} – ${eur(i.price * i.quantity)}`
+    + (i.variant ? `<br><small style="color:#666">${esc(i.variant)}</small>` : '') + '</li>'
+).join('');
 
 router.post('/', async (req, res) => {
     try {
-        
-        const { customer, items, totalPrice, paymentMethod } = req.body;
-        
+        const { customer, items, paymentMethod } = req.body;
+        if (!customer?.name || !customer?.phone || !customer?.address) {
+            return res.status(400).json({ error: 'Попълнете име, телефон и адрес.' });
+        }
+        if (!Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Количката е празна.' });
+        }
+
+        const pricedItems = await priceItems(items);
+        const totalPrice = pricedItems.reduce((s, i) => s + i.price * i.quantity, 0);
+
+        const allowedPayments = ['Наложен платеж', 'Плащане при монтаж'];
         const newOrder = await Order.create({
-            customer,
-            items,
+            customer: { ...customer, city: customer.city || 'България' },
+            items: pricedItems,
             totalPrice,
-            paymentMethod: paymentMethod || 'Наложен платеж', 
+            paymentMethod: allowedPayments.includes(paymentMethod) ? paymentMethod : 'Наложен платеж',
             status: 'pending'
         });
 
-        
-        const itemsListHtml = items.map(item => {
-            const variantText = item.variant ? `<br><small style="color: #666;">Детайли: ${item.variant}</small>` : '';
-            return `<li style="margin-bottom: 10px;">${item.title} (x${item.quantity}) - ${item.price} лв.${variantText}</li>`;
-        }).join('');
+        const shortId = newOrder._id.toString().slice(-6);
+        const summary = `<ul>${itemsHtml(pricedItems)}</ul>
+            <p><strong>Обща сума: ${eur(totalPrice)}</strong></p>
+            <p><strong>Плащане:</strong> ${esc(newOrder.paymentMethod)}</p>
+            <p><strong>Адрес:</strong> ${esc(customer.address)}</p>`;
 
         if (customer.email) {
-            const mailOptions = {
-                from: '"Media Car Garage" <borislav.borisov2003b@gmail.com>',
+            sendMail({
                 to: customer.email,
-                subject: `Потвърждение за поръчка #${newOrder._id.toString().slice(-6)}`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd;">
-                        <h2 style="color: #333;">Благодарим Ви за поръчката, ${customer.name}!</h2>
-                        <p>Вашата поръчка е приета успешно и се обработва.</p>
-                        
-                        <h3>Детайли за поръчката:</h3>
-                        <ul>${itemsListHtml}</ul>
-                        
-                        <p><strong>Обща сума: ${totalPrice} лв.</strong></p>
-                        <p><strong>Начин на плащане:</strong> ${newOrder.paymentMethod}</p>
-                        <p><strong>Адрес за доставка:</strong> ${customer.address}</p>
-                        
-                        <hr>
-                        <p style="font-size: 12px; color: #777;">Ще получите нов имейл, когато пратката бъде изпратена.</p>
-                    </div>
-                `
-            };
-            transporter.sendMail(mailOptions).catch(err => console.error('Грешка при мейл:', err));
+                subject: `Потвърждение за поръчка #${shortId}`,
+                html: `<div style="font-family:Arial,sans-serif;padding:20px">
+                    <h2>Благодарим ви, ${esc(customer.name)}!</h2>
+                    <p>Поръчката е приета. Ще ви се обадим за потвърждение.</p>${summary}</div>`
+            }).catch(err => console.error('Грешка при мейл:', err));
         }
+        sendMail({
+            to: MAIL_TO,
+            subject: `Нова поръчка #${shortId} – ${eur(totalPrice)}`,
+            html: `<p>${esc(customer.name)}, ${esc(customer.phone)}</p>${summary}`
+        }).catch(err => console.error('Грешка при мейл:', err));
 
-        console.log('Нова поръчка:', newOrder._id);
         res.status(201).json(newOrder);
-
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Грешка при създаване на поръчката.' });
+        res.status(400).json({ error: err.message || 'Поръчката не беше създадена.' });
     }
 });
 
-
 router.get('/', isAdmin, async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
-        res.json(orders);
+        res.json(await Order.find().sort({ createdAt: -1 }));
     } catch (err) {
         res.status(500).json({ error: 'Грешка при зареждане на поръчките.' });
     }
 });
 
-
 router.put('/:id', isAdmin, async (req, res) => {
     try {
         const { status } = req.body;
-        const orderId = req.params.id;
-
-        const updatedOrder = await Order.findByIdAndUpdate(
-            orderId, 
-            { status: status }, 
-            { new: true }
-        );
-
-        if (!updatedOrder) {
-            return res.status(404).json({ error: 'Поръчката не е намерена' });
-        }
+        const updatedOrder = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true, runValidators: true });
+        if (!updatedOrder) return res.status(404).json({ error: 'Поръчката не е намерена' });
 
         if (status === 'shipped' && updatedOrder.customer.email) {
-            const mailOptions = {
-                from: '"Media Car Garage" <borislav.borisov2003b@gmail.com>',
+            sendMail({
                 to: updatedOrder.customer.email,
-                subject: `Поръчка #${updatedOrder._id.toString().slice(-6)} е ИЗПРАТЕНА!`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9;">
-                        <h2 style="color: #007bff;">Пратката пътува към вас! 🚚</h2>
-                        <p>Здравейте, ${updatedOrder.customer.name}</p>
-                        <p>Статусът на вашата поръчка беше променен на <strong>ИЗПРАТЕНА</strong>.</p>
-                        
-                        <p>Очаквайте доставка до офис или адрес в рамките на 1-2 работни дни.</p>
-                        
-                        <div style="background: white; padding: 15px; border-radius: 5px; margin-top: 20px;">
-                            <strong>Адрес за доставка:</strong><br>
-                            ${updatedOrder.customer.address}
-                        </div>
-
-                        <p>Благодарим Ви, че избрахте нас!</p>
-                    </div>
-                `
-           };
-            transporter.sendMail(mailOptions).catch(err => console.error('Грешка при мейл за изпращане:', err));
+                subject: `Поръчка #${updatedOrder._id.toString().slice(-6)} е изпратена`,
+                html: `<div style="font-family:Arial,sans-serif;padding:20px">
+                    <h2>Пратката пътува към вас</h2>
+                    <p>Здравейте, ${esc(updatedOrder.customer.name)}! Очаквайте доставка до 1–2 работни дни.</p>
+                    <p><strong>Адрес:</strong> ${esc(updatedOrder.customer.address)}</p></div>`
+            }).catch(err => console.error('Грешка при мейл:', err));
         }
-
         res.json(updatedOrder);
-
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Грешка при обновяване на статуса' });
-    }
-});
-
-
-router.delete('/:id', isAdmin, async (req, res) => {
-    try {
-        await Order.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Поръчката е изтрита' });
-    } catch (err) {
-        res.status(500).json({ error: 'Грешка при изтриване' });
     }
 });
 

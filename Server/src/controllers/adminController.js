@@ -13,7 +13,7 @@ router.post('/register', async (req, res) => {
         res.status(201).json({ message: 'Успешна регистрация' });
     } catch (err) {
         const msg = getErrorMessage(err);
-        res.status(400).json({ error: msg });
+        res.status(err.status || 400).json({ error: msg });
     }
 });
 

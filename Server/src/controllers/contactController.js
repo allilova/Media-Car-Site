@@ -1,51 +1,41 @@
 import { Router } from 'express';
-import nodemailer from 'nodemailer';
+import { sendMail, esc } from '../lib/mailer.js';
+import { MAIL_TO } from '../config/constants.js';
 
 const router = Router();
 
-
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: 'borislav.borisov2003b@gmail.com', 
-        pass: 'jmku lvdu tsaf erjy'    
-    }
-});
+const TYPES = {
+    general: 'Запитване от сайта',
+    b2b: 'B2B запитване (автокъща / автопарк)',
+};
 
 router.post('/', async (req, res) => {
-    const { name, email, subject, message } = req.body;
+    const { name, email, phone, subject, message, type = 'general', company, fleetSize } = req.body;
 
-    // Съдържанието на имейла, който ТИ ще получиш
-    const mailOptions = {
-        from: `"${name}" <${email}>`, // От кого е (визуално)
-        to: 'borislav.borisov2003b@gmail.com',   // <-- КЪДЕ ДА ПРИСТИГАТ ЗАПИТВАНИЯТА
-        subject: `Запитване от сайта: ${subject}`,
-        text: `
-            Име: ${name}
-            Имейл: ${email}
-            Тема: ${subject}
-            
-            Съобщение:
-            ${message}
-        `,
-        html: `
-            <h3>Ново запитване от сайта</h3>
-            <p><strong>Име:</strong> ${name}</p>
-            <p><strong>Имейл:</strong> ${email}</p>
-            <p><strong>Тема:</strong> ${subject}</p>
-            <hr>
-            <p><strong>Съобщение:</strong></p>
-            <p>${message}</p>
-        `
-    };
+    if (!name || !(email || phone) || !message) {
+        return res.status(400).json({ error: 'Попълнете име, имейл или телефон и съобщение.' });
+    }
+
+    const title = TYPES[type] || TYPES.general;
+    const rows = [
+        ['Име', name], ['Имейл', email], ['Телефон', phone],
+        ['Фирма', company], ['Брой автомобили', fleetSize], ['Тема', subject],
+    ].filter(([, v]) => v);
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log('Имейлът е изпратен!');
-        res.status(200).json({ message: 'Съобщението е изпратено успешно!' });
+        await sendMail({
+            to: MAIL_TO,
+            replyTo: email || undefined,
+            subject: `${title}: ${String(subject || name).slice(0, 80)}`,
+            text: rows.map(([k, v]) => `${k}: ${v}`).join('\n') + `\n\n${message}`,
+            html: `<h3>${esc(title)}</h3>`
+                + rows.map(([k, v]) => `<p><strong>${esc(k)}:</strong> ${esc(v)}</p>`).join('')
+                + `<hr><p style="white-space:pre-line">${esc(message)}</p>`,
+        });
+        res.status(200).json({ message: 'Съобщението е изпратено.' });
     } catch (error) {
         console.error('Грешка при пращане:', error);
-        res.status(500).json({ error: 'Възникна грешка при изпращането.' });
+        res.status(500).json({ error: 'Съобщението не беше изпратено. Обадете ни се на телефона.' });
     }
 });
 
