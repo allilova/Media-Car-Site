@@ -7,6 +7,8 @@ const productSchema = new mongoose.Schema({
     oldPrice: { type: Number },
     description: { type: String },
     images: [{ type: String }],
+    // Марки/модели, за които е подходящ продуктът (напр. "BMW 3 серия E90")
+    compatibility: [{ type: String }],
     specs: {
         os: { type: String, default: 'Android 13' },      
         screen: { type: String, default: 'QLED' },        
@@ -17,7 +19,7 @@ const productSchema = new mongoose.Schema({
         ram: Number,
         rom: Number,
         price: Number,
-        cpu: { type: String, default: '4-core' } 
+        cpu: { type: String, default: '8-ядрен' } 
     }],
     
     createdAt: { type: Date, default: Date.now }

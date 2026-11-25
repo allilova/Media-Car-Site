@@ -10,7 +10,7 @@ const router = Router();
 
 
 router.get('/', (req, res) => {
-    res.send('Auto Media Garage API is working!');
+    res.send('Retrofy API is working!');
 });
 router.use(adminMiddleware);
 router.use('/products',productController);
